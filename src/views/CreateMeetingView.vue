@@ -87,7 +87,10 @@ const clearSelection = () => {
 
 const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string) => {
   const key = import.meta.env.VITE_OPENWEATHER_KEY
-  if (!key) return { ok: true }
+  if (!key) {
+    console.warn('VITE_OPENWEATHER_KEY missing')
+    return { ok: true }
+  }
   try {
     const res = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${key}`)
     if (!res.ok) return { ok: true }
@@ -108,6 +111,7 @@ const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string) 
     }
     return { ok: true }
   } catch (e) {
+    console.error('checkWeatherForCoords error', e)
     return { ok: true }
   }
 }
@@ -122,6 +126,7 @@ const geocodeOWM = async (query: string) => {
     if (!Array.isArray(data) || data.length === 0) return null
     return { lat: data[0].lat, lon: data[0].lon }
   } catch (e) {
+    console.error('geocodeOWM error', e)
     return null
   }
 }
@@ -188,6 +193,12 @@ const handleSubmit = async () => {
     image: '🎯',
   })
 
+  // debug: log last meeting saved
+  try {
+    const stored = JSON.parse(localStorage.getItem('meetings') || '[]')
+    console.log('Stored meetings last:', stored[0])
+  } catch (e) {}
+
   alert('모임이 생성되었습니다!')
   router.push('/community')
 }
@@ -252,12 +263,12 @@ const handleSubmit = async () => {
           <input
             ref="placeInput"
             v-model="placeQuery"
-            @input="onPlaceInput(placeQuery)"
+            @input="onPlaceInput($event.target.value)"
             type="text"
             placeholder="검색어를 입력하면 장소가 표시됩니다 (예: 여의도 한강공원)"
           />
           <ul v-if="suggestions.length" class="suggestions-list" :style="dropdownStyle">
-            <li v-for="s in suggestions" :key="s.id" @click="pickSuggestion(s)">{{ s.name }}</li>
+            <li v-for="(s, idx) in suggestions" :key="idx" @click="pickSuggestion(s)">{{ s.name }}</li>
           </ul>
           <div v-if="selectedPlaceId !== null" class="selected-place">
             <div class="place-preview">
