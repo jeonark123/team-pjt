@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { RouterLink, RouterView } from 'vue-router';
-import PlaceChatBot from '@/components/PlaceChatBot.vue';
-import FlaticonIcon from '@/components/FlaticonIcon.vue';
 
-const showSidebar = ref(false);
 import { onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import PlaceChatBot from '@/components/PlaceChatBot.vue'
@@ -111,17 +106,6 @@ onUnmounted(() => {
           <button class="weather-btn">추천 활동 보기</button>
         </div>
 
-<<<<<<< HEAD
-        <div class="ai-section">
-          <div class="ai-header">
-            <span class="ai-icon"><FlaticonIcon name="idea" :size="18" /></span>
-            <h3>AI 어시스턴트</h3>
-          </div>
-          <p class="ai-text">당신에게 딱 맞는<br />모임을 찾아드려요!</p>
-          <button class="ai-btn"><FlaticonIcon name="chat" :size="16" /> 대화 시작</button>
-        </div>
-=======
->>>>>>> feature/main-page-update
       </aside>
 
       <PlaceChatBot :is-open="isChatbotOpen" @update:is-open="isChatbotOpen = $event" />
