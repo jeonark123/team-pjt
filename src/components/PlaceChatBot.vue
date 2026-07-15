@@ -35,6 +35,12 @@ const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
 const isOpen = ref(true);
 const quickPrompts = ['서울에서 첫 데이트 코스 추천해줘'];
 
+// 지역별 최대 개수 (전체 카탈로그 크기 조절용)
+const PER_REGION_LIMIT = 40;
+
+// 사용자 질문에서 지역 키워드 감지용
+const REGION_KEYWORDS = ['서울', '부산', '광주', '전라', '대전', '충청', '구미', '경북'];
+
 const placeMap = computed(() => new Map(places.value.map((place) => [place.id, place])));
 
 const selectQuickPrompt = (prompt: string) => {
@@ -100,7 +106,19 @@ const loadPlaces = async () => {
       })
       .flat();
 
-    const publicPlaces: Place[] = itemsWithLabel.slice(0, 160).map(({ item, label }) => ({
+    // 지역별로 그룹핑 후, 지역마다 최대 PER_REGION_LIMIT개씩만 남기고 합침
+    // (기존 slice(0, 160)은 배열 순서상 앞쪽 지역(서울)만 남기는 문제가 있었음)
+    const grouped = new Map<string, { item: any; label: string }[]>();
+    itemsWithLabel.forEach(({ item, label }) => {
+      if (!grouped.has(label)) grouped.set(label, []);
+      grouped.get(label)!.push({ item, label });
+    });
+
+    const balancedItems = Array.from(grouped.values()).flatMap((group) =>
+      group.slice(0, PER_REGION_LIMIT),
+    );
+
+    const publicPlaces: Place[] = balancedItems.map(({ item, label }) => ({
       id: `public-${item.contentid ?? item.CONTENTID ?? item.id ?? item.title ?? Math.random().toString(36).slice(2)}`,
       name: item.title ?? item.name ?? item.facltNm ?? '이름 없음',
       region: label,
@@ -128,12 +146,18 @@ const buildPrompt = (question: string) => {
     content: message.text,
   }));
 
+  // 질문에 지역 키워드가 있으면 해당 지역 데이터만 추려서 전달 (토큰 절약 + 정확도 향상)
+  const mentionedRegion = REGION_KEYWORDS.find((keyword) => question.includes(keyword));
+  const filteredPlaces = mentionedRegion
+    ? places.value.filter((place) => place.region.includes(mentionedRegion))
+    : places.value;
+
   return [
     '당신은 데이트와 모임 장소를 추천하는 한국어 챗봇입니다.',
     '반드시 아래 public/data 폴더의 JSON 파일에 있는 장소만 참고하고, 데이터에 없는 장소를 만들어내지 마세요.',
     '답변은 따뜻하고 자연스럽게, 한두 문장으로 요약하되 추천 이유를 함께 적어주세요.',
     `public/data 카탈로그:
-${JSON.stringify(places.value, null, 2)}`,
+${JSON.stringify(filteredPlaces, null, 2)}`,
     `대화 맥락:
 ${JSON.stringify(recentContext, null, 2)}`,
     `사용자 질문: ${question}`,
