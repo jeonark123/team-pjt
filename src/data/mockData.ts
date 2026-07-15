@@ -10,6 +10,8 @@ export const placesData = [
     description: '강변 바람을 맞으며 쾌적한 러닝 코스',
     rating: 4.8,
     reviews: 324,
+    lat: 37.525,
+    lng: 126.93,
   },
   {
     id: 2,
@@ -21,6 +23,8 @@ export const placesData = [
     description: '서울 전경을 감상할 수 있는 명소',
     rating: 4.9,
     reviews: 512,
+    lat: 37.552,
+    lng: 126.988,
   },
   {
     id: 3,
@@ -32,6 +36,8 @@ export const placesData = [
     description: '조용하고 깨끗한 숲 산책로',
     rating: 4.7,
     reviews: 156,
+    lat: 37.505,
+    lng: 127.063,
   },
   {
     id: 4,
@@ -43,6 +49,8 @@ export const placesData = [
     description: '시설 좋은 종로 운동장',
     rating: 4.6,
     reviews: 289,
+    lat: 37.514,
+    lng: 127.100,
   },
   {
     id: 5,
@@ -54,6 +62,8 @@ export const placesData = [
     description: '역사 깊은 캠퍼스에서의 여유로운 산책',
     rating: 4.5,
     reviews: 78,
+    lat: 37.584,
+    lng: 127.025,
   },
   {
     id: 6,
@@ -65,6 +75,8 @@ export const placesData = [
     description: '트렌디한 쇼핑 경험',
     rating: 4.4,
     reviews: 445,
+    lat: 37.497,
+    lng: 127.028,
   },
 ]
 
