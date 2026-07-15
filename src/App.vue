@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+import PlaceChatBot from '@/components/PlaceChatBot.vue'
 
 const showSidebar = ref(false)
 </script>
@@ -83,6 +84,8 @@ const showSidebar = ref(false)
           </div>
         </div>
       </aside>
+
+      <PlaceChatBot />
     </div>
 
     <footer class="footer">
