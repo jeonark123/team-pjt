@@ -61,10 +61,10 @@ const renderMarkers = () => {
     createdMarkers.push(marker)
   })
 
-  if (showCluster.value && (window as any).kakao && (window as any).kakao.maps && (window as any).MarkerClusterer) {
+  if (showCluster.value && kakao.maps && kakao.maps.MarkerClusterer) {
     // Kakao MarkerClusterer 사용
     try {
-      markerClusterer.value = new (window as any).MarkerClusterer({ map: kakaoMap.value, markers: createdMarkers, averageCenter: true, minLevel: 7 })
+      markerClusterer.value = new kakao.maps.MarkerClusterer({ map: kakaoMap.value, markers: createdMarkers, averageCenter: true, minLevel: 7 })
     } catch (e) {
       // fallback: 개별 마커를 지도에 올림
       createdMarkers.forEach(m => m.setMap(kakaoMap.value))
