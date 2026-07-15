@@ -327,7 +327,7 @@ onUnmounted(() => {
             <span class="spinner"></span> 위치 확인 중
           </span>
         </div>
-        >>>>>>> share-ai-recommended-places
+
         <div class="map-container">
           <div ref="mapContainer" class="map"></div>
           <div v-if="!isMapReady" class="map-loading">
