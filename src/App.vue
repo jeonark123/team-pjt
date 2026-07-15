@@ -5,6 +5,25 @@ import PlaceChatBot from '@/components/PlaceChatBot.vue';
 import FlaticonIcon from '@/components/FlaticonIcon.vue';
 
 const showSidebar = ref(false);
+import { onMounted, onUnmounted, ref } from 'vue'
+import { RouterLink, RouterView } from 'vue-router'
+import PlaceChatBot from '@/components/PlaceChatBot.vue'
+import FlaticonIcon from '@/components/FlaticonIcon.vue'
+
+const showSidebar = ref(false)
+const isChatbotOpen = ref(false)
+
+const openChatbotFromEvent = () => {
+  isChatbotOpen.value = true
+}
+
+onMounted(() => {
+  window.addEventListener('open-chatbot', openChatbotFromEvent)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('open-chatbot', openChatbotFromEvent)
+})
 </script>
 
 <template>
@@ -92,6 +111,7 @@ const showSidebar = ref(false);
           <button class="weather-btn">추천 활동 보기</button>
         </div>
 
+<<<<<<< HEAD
         <div class="ai-section">
           <div class="ai-header">
             <span class="ai-icon"><FlaticonIcon name="idea" :size="18" /></span>
@@ -100,13 +120,15 @@ const showSidebar = ref(false);
           <p class="ai-text">당신에게 딱 맞는<br />모임을 찾아드려요!</p>
           <button class="ai-btn"><FlaticonIcon name="chat" :size="16" /> 대화 시작</button>
         </div>
+=======
+>>>>>>> feature/main-page-update
       </aside>
 
-      <PlaceChatBot />
+      <PlaceChatBot :is-open="isChatbotOpen" @update:is-open="isChatbotOpen = $event" />
     </div>
 
     <footer class="footer">
-      <p>© 2024 Local Mate. 모두를 위한 똑똑한 커뮤니티</p>
+      <p>© 2026 sunset. 모두를 위한 똑똑한 커뮤니티</p>
     </footer>
   </div>
 </template>
@@ -137,8 +159,7 @@ const showSidebar = ref(false);
   max-width: 1800px;
   margin: 0 auto;
   padding: 0.75rem 1.5rem;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
   gap: 1rem;
 }
@@ -187,8 +208,10 @@ const showSidebar = ref(false);
 }
 
 .search-box {
-  justify-self: center;
-  width: min(100%, 560px);
+  flex: 1;
+  min-width: 0;
+  max-width: 560px;
+  margin: 0 auto;
   position: relative;
 }
 
@@ -222,6 +245,8 @@ const showSidebar = ref(false);
   gap: 0.5rem;
   align-items: center;
   justify-self: end;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .icon-btn {
@@ -241,13 +266,26 @@ const showSidebar = ref(false);
 }
 
 .icon-btn:hover {
-  background: #fff5fa;
+  background: linear-gradient(135deg, #ff1f8f 0%, #ff6bb7 100%);
+  color: white;
+  border-color: #ff5ca8;
+  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.24);
   transform: scale(1.05);
 }
 
 .profile-btn {
-  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
+  background: #fff;
+  color: #ff5ca8;
+  border: 1px solid #f0e0ea;
+  box-shadow: 0 2px 6px rgba(255, 20, 147, 0.08);
+}
+
+.profile-btn:hover {
+  background: linear-gradient(135deg, #ff1f8f 0%, #ff6bb7 100%);
   color: white;
+  border-color: #ff5ca8;
+  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.24);
+  transform: scale(1.05);
 }
 
 /* Layout */
@@ -295,7 +333,14 @@ const showSidebar = ref(false);
 
 .nav-item:hover {
   background: rgba(255, 20, 147, 0.08);
-  color: #ff1493;
+  color: #FF1493;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 20, 147, 0.12);
+}
+
+.nav-item:hover .nav-icon {
+  background: #fff5fa;
+  color: #ff5ca8;
 }
 
 .nav-item .nav-icon {
@@ -588,6 +633,11 @@ const showSidebar = ref(false);
     max-width: 200px;
   }
 
+  .header-actions {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
   .main-content {
     padding: 1.5rem;
   }
@@ -604,17 +654,12 @@ const showSidebar = ref(false);
   }
 
   .search-box {
-    flex: 1;
-    max-width: 150px;
-  }
-
-  .search-box input {
-    padding: 0.5rem 2rem 0.5rem 0.75rem;
-    font-size: 0.85rem;
+    display: none;
   }
 
   .header-actions {
     gap: 0.25rem;
+    margin-left: auto;
   }
 
   .icon-btn {
@@ -650,6 +695,7 @@ const showSidebar = ref(false);
 
   .header-actions {
     gap: 0.2rem;
+    margin-left: auto;
   }
 
   .icon-btn {

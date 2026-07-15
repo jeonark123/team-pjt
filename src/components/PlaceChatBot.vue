@@ -27,11 +27,17 @@ type ChatMessage = {
   time: string;
 };
 
+const props = defineProps<{ isOpen?: boolean }>();
+const emit = defineEmits<{ (e: 'update:isOpen', value: boolean): void }>();
+
 const input = ref('');
 const isLoading = ref(false);
 const errorMessage = ref('');
 const places = ref<Place[]>([]);
-const isOpen = ref(false);
+const isOpen = computed({
+  get: () => props.isOpen ?? false,
+  set: (value: boolean) => emit('update:isOpen', value),
+});
 const unreadCount = ref(0);
 const showScrollButton = ref(false);
 
@@ -188,14 +194,15 @@ const loadPlaces = async () => {
     const responses = await Promise.all(regionFiles.map((file) => fetch(file.path)));
     const datasets = await Promise.all(
       responses.map(async (response, idx) => {
+        const regionFile = regionFiles[idx];
         if (!response.ok) {
-          console.warn('Failed to fetch', regionFiles[idx].path, response.status);
+          console.warn('Failed to fetch', regionFile?.path, response.status);
           return null;
         }
         try {
           return await response.json();
         } catch (e) {
-          console.warn('Invalid JSON:', regionFiles[idx].path, e);
+          console.warn('Invalid JSON:', regionFile?.path, e);
           return null;
         }
       }),
@@ -204,10 +211,11 @@ const loadPlaces = async () => {
     const itemsWithLabel = datasets
       .map((dataset: any, index: number) => {
         const items = extractItems(dataset);
+        const regionFile = regionFiles[index];
         if (!items || items.length === 0) {
-          console.warn('No items extracted from', regionFiles[index].path, dataset);
+          console.warn('No items extracted from', regionFile?.path, dataset);
         }
-        return (items || []).map((item: any) => ({ item, label: regionFiles[index].label }));
+        return (items || []).map((item: any) => ({ item, label: regionFile?.label ?? '알 수 없음' }));
       })
       .flat();
 
