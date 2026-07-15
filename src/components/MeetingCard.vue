@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMeetingStore } from '@/stores/meeting'
+import FlaticonIcon from '@/components/FlaticonIcon.vue'
 
 interface Meeting {
   id: number
@@ -41,11 +42,11 @@ const formatDate = (dateString: string) => {
 const getGenderLabel = (category: string) => {
   switch (category) {
     case 'male':
-      return '👨 남자 모임'
+      return '남자 모임'
     case 'female':
-      return '👩 여자 모임'
+      return '여자 모임'
     case 'mixed':
-      return '👥 혼성 모임'
+      return '혼성 모임'
   }
 }
 
@@ -70,24 +71,24 @@ const getCategoryColor = (category: string) => {
         }}</span>
         <span class="difficulty-badge" :class="meeting.difficulty">{{ meeting.difficulty }}</span>
       </div>
-      <div class="emoji">{{ meeting.image }}</div>
+      <div class="emoji"><FlaticonIcon name="sparkles" :size="20" /></div>
     </div>
 
     <div class="card-content">
       <h3>{{ meeting.title }}</h3>
 
       <div class="info-row">
-        <span class="icon">📍</span>
+        <span class="icon"><FlaticonIcon name="pin" :size="16" /></span>
         <span>{{ meeting.location }}</span>
       </div>
 
       <div class="info-row">
-        <span class="icon">📅</span>
+        <span class="icon"><FlaticonIcon name="calendar" :size="16" /></span>
         <span>{{ formatDate(meeting.date) }} {{ meeting.time }}</span>
       </div>
 
       <div class="info-row">
-        <span class="icon">🌤️</span>
+        <span class="icon"><FlaticonIcon name="sun" :size="16" /></span>
         <span>{{ meeting.weather }}</span>
       </div>
 
@@ -95,7 +96,7 @@ const getCategoryColor = (category: string) => {
 
       <div class="participants-info">
         <span class="participants">
-          👥 {{ meeting.participants }}/{{ meeting.maxParticipants }}명
+          <FlaticonIcon name="group" :size="14" /> {{ meeting.participants }}/{{ meeting.maxParticipants }}명
         </span>
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: (meeting.participants / meeting.maxParticipants) * 100 + '%' }"></div>
@@ -157,7 +158,14 @@ const getCategoryColor = (category: string) => {
 }
 
 .emoji {
-  font-size: 1.8rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 20, 147, 0.1);
+  color: #ff5ca8;
 }
 
 .card-content {
@@ -181,7 +189,14 @@ const getCategoryColor = (category: string) => {
 }
 
 .icon {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: #fff5fa;
+  color: #ff5ca8;
 }
 
 .description {
@@ -199,7 +214,9 @@ const getCategoryColor = (category: string) => {
 }
 
 .participants {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.9rem;
   color: var(--primary);
   font-weight: 600;

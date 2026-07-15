@@ -3,13 +3,14 @@ import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useMeetingStore } from '@/stores/meeting'
 import MeetingCard from '@/components/MeetingCard.vue'
+import FlaticonIcon from '@/components/FlaticonIcon.vue'
 
 const meetingStore = useMeetingStore()
 const activeTab = ref('female')
 const categories = [
-  { id: 'female', name: '👩 여자 모임', icon: '👩' },
-  { id: 'male', name: '👨 남자 모임', icon: '👨' },
-  { id: 'mixed', name: '👥 혼성 모임', icon: '👥' },
+  { id: 'female', name: '여자 모임', icon: 'group' },
+  { id: 'male', name: '남자 모임', icon: 'group' },
+  { id: 'mixed', name: '혼성 모임', icon: 'group' },
 ]
 const filteredMeetings = computed(() => {
   return meetingStore.getMeetingsByCategory(activeTab.value as 'male' | 'female' | 'mixed')
@@ -33,7 +34,7 @@ const filteredMeetings = computed(() => {
           :class="['tab-btn', { active: activeTab === cat.id }]"
           @click="activeTab = cat.id"
         >
-          <span class="tab-icon">{{ cat.icon }}</span>
+          <span class="tab-icon"><FlaticonIcon :name="cat.icon" :size="16" /></span>
           <span class="tab-label">{{ cat.name }}</span>
         </button>
       </div>
@@ -45,7 +46,7 @@ const filteredMeetings = computed(() => {
         <MeetingCard v-for="meeting in filteredMeetings" :key="meeting.id" :meeting="meeting" />
       </div>
       <div v-else class="empty-state">
-        <span class="empty-icon">📭</span>
+        <span class="empty-icon"><FlaticonIcon name="empty" :size="40" /></span>
         <h3>현재 이용 가능한 모임이 없습니다</h3>
         <p>새로운 모임을 만들어보세요!</p>
       </div>
@@ -54,7 +55,7 @@ const filteredMeetings = computed(() => {
     <!-- Create Meeting CTA -->
     <section class="cta-section">
       <div class="cta-card">
-        <div class="cta-icon">✨</div>
+        <div class="cta-icon"><FlaticonIcon name="sparkles" :size="28" /></div>
         <h3>새 모임을 만들어보세요!</h3>
         <p>당신의 관심사와 맞는 사람들을 찾아 함께 활동해보세요.</p>
         <RouterLink to="/create" class="cta-btn">모임 만들기</RouterLink>
