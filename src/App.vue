@@ -61,15 +61,6 @@ const showSidebar = ref(false)
 
       <!-- Right Sidebar -->
       <aside class="right-sidebar">
-        <div class="ai-section">
-          <div class="ai-header">
-            <span class="ai-icon">🤖</span>
-            <h3>AI 어시스턴트</h3>
-          </div>
-          <p class="ai-text">당신에게 딱 맞는<br/>모임을 찾아드려요!</p>
-          <button class="ai-btn">💬 대화 시작</button>
-        </div>
-
         <div class="notice-section">
           <h3>📢 공지사항</h3>
           <div class="notice-item">
@@ -80,6 +71,29 @@ const showSidebar = ref(false)
             <p class="notice-title">☀️ 날씨 기반<br/>활동 가이드</p>
             <p class="notice-time">어제</p>
           </div>
+        </div>
+
+        <div class="weather-section">
+          <div class="weather-header">
+            <h3>날씨 정보 제안</h3>
+            <span class="weather-tag">오늘</span>
+          </div>
+          <p class="weather-summary">현재 서울은 맑음, 야외 활동하기 좋은 날씨입니다.</p>
+          <ul class="weather-list">
+            <li>기온: 24°C</li>
+            <li>체감: 26°C</li>
+            <li>강수 확률: 10%</li>
+          </ul>
+          <button class="weather-btn">추천 활동 보기</button>
+        </div>
+
+        <div class="ai-section">
+          <div class="ai-header">
+            <span class="ai-icon">🤖</span>
+            <h3>AI 어시스턴트</h3>
+          </div>
+          <p class="ai-text">당신에게 딱 맞는<br/>모임을 찾아드려요!</p>
+          <button class="ai-btn">💬 대화 시작</button>
         </div>
       </aside>
     </div>
@@ -350,51 +364,25 @@ const showSidebar = ref(false)
 }
 
 .ai-section {
-  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+  background: #ffffff;
   border-radius: 16px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   text-align: center;
-  border: 2px solid rgba(255, 192, 203, 0.3);
-}
-
-.ai-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.ai-icon {
-  font-size: 1.8rem;
-}
-
-.ai-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #333;
-  font-weight: 600;
-}
-
-.ai-text {
-  font-size: 0.9rem;
-  color: #333;
-  margin: 0.75rem 0 1rem;
-  line-height: 1.4;
+  border: 1px solid #f0e0ff;
 }
 
 .ai-btn {
   width: 100%;
-  padding: 0.8rem;
+  padding: 0.9rem;
   background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
   color: white;
   border: none;
-  border-radius: 10px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .ai-btn:hover {
@@ -421,6 +409,73 @@ const showSidebar = ref(false)
 .notice-item:hover {
   background: rgba(255, 20, 147, 0.08);
   transform: translateX(4px);
+}
+
+.weather-section {
+  background: #f9f5ff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #f0e0ff;
+}
+
+.weather-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.weather-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.weather-tag {
+  background: #fff0ff;
+  color: #c71585;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.weather-summary {
+  margin: 0 0 1rem;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.weather-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.weather-list li {
+  display: flex;
+  justify-content: space-between;
+}
+
+.weather-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 12px;
+  background: #fff;
+  color: #c71585;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.weather-btn:hover {
+  background: #ffeeff;
 }
 
 .notice-title {
