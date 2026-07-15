@@ -24,6 +24,7 @@ const markerClusterer = ref<any>(null)
 const showCluster = ref<boolean>(true)
 const externalPlaces = ref<any[]>([])
 const showDatasets = ref({ travel: false, culture: false, leisure: false })
+const kakaoAvailable = ref<boolean | null>(null)
 
 const toMarkersSource = (p: any) => {
   if (p.lat && p.lng) return { name: p.name || p.title || '장소', lat: p.lat, lng: p.lng }
@@ -114,6 +115,10 @@ const loadDatasets = async () => {
 
 onMounted(() => {
   initializeMap()
+  // 짧은 시간 내에 kakao가 로드되지 않으면 사용자에게 안내
+  setTimeout(() => {
+    kakaoAvailable.value = !!(window as any).kakao
+  }, 1500)
 })
 
 watch(showDatasets, () => { loadDatasets() }, { deep: true })
@@ -159,6 +164,10 @@ watch(showDatasets, () => { loadDatasets() }, { deep: true })
         <div ref="mapContainer" class="map"></div>
       </div>
     </section>
+    <div v-if="kakaoAvailable === false" class="map-error">
+      <p>지도 로드를 실패했습니다 — 브라우저 확장(애드블록/프라이버시) 또는 네트워크가 dapi.kakao.com을 차단하고 있을 수 있습니다.</p>
+      <p>해결: 확장 비활성화 또는 <a href="https://dapi.kakao.com" target="_blank" rel="noreferrer">dapi.kakao.com 허용</a> 후 새로고침하세요.</p>
+    </div>
     <section class="results-section">
       <div v-if="filteredPlaces.length > 0" class="places-grid">
         <PlaceCard v-for="place in filteredPlaces" :key="place.id" :place="place" />
@@ -344,6 +353,16 @@ watch(showDatasets, () => { loadDatasets() }, { deep: true })
 .map-controls label[style] {
   margin-left: 12px;
 }
+
+.map-error {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fff1f3;
+  border: 1px solid #ffd6e7;
+  border-radius: 8px;
+  color: #6b2236;
+}
+.map-error a { color: #b80f57 }
 
 .places-grid {
   display: grid;
