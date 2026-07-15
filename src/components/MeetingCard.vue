@@ -24,12 +24,21 @@ const props = defineProps<{
 
 const meetingStore = useMeetingStore()
 
+import { ref } from 'vue'
+
+const toast = ref(false)
+const toastMessage = ref('')
+
 const handleJoin = () => {
   const success = meetingStore.joinMeeting(props.meeting.id)
   if (success) {
-    alert('모임에 참가했습니다!')
+    toastMessage.value = '모임에 참가했습니다!'
+    toast.value = true
+    setTimeout(() => (toast.value = false), 1500)
   } else {
-    alert('더 이상 참가할 수 없습니다.')
+    toastMessage.value = '더 이상 참가할 수 없습니다.'
+    toast.value = true
+    setTimeout(() => (toast.value = false), 1800)
   }
 }
 
@@ -113,6 +122,8 @@ const getCategoryColor = (category: string) => {
       </button>
     </div>
   </div>
+  <!-- Toast -->
+  <div v-if="toast" class="mc-toast">{{ toastMessage }}</div>
 </template>
 
 <style scoped>
@@ -260,6 +271,20 @@ const getCategoryColor = (category: string) => {
   background: var(--text-light);
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.mc-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 60px;
+  background: white;
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+  color: #333;
+  font-weight:700;
+  z-index: 99999;
 }
 
 @media (max-width: 768px) {

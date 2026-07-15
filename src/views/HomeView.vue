@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
+import { useMeetingStore } from '@/stores/meeting'
+import MeetingCard from '@/components/MeetingCard.vue'
 import FlaticonIcon from '@/components/FlaticonIcon.vue';
 import { useRecommendedPlaces } from '@/composables/useRecommendedPlaces';
 
@@ -55,35 +57,9 @@ const defaultPlaces = [
   },
 ];
 
-const meetings = [
-  {
-    id: 1,
-    title: '일요일 한강 조깅 함께해요!',
-    location: '여의도 한강공원',
-    date: '7월 21일 (일)',
-    time: '07:00',
-    category: '👩',
-    participants: '5/10',
-  },
-  {
-    id: 2,
-    title: '남산 산책 모임',
-    location: '남산',
-    date: '7월 22일 (월)',
-    time: '18:00',
-    category: '👩',
-    participants: '3/8',
-  },
-  {
-    id: 3,
-    title: '강남 쇼핑 & 카페투어',
-    location: '강남역',
-    date: '7월 20일 (토)',
-    time: '14:00',
-    category: '👩',
-    participants: '7/12',
-  },
-];
+const meetingStore = useMeetingStore()
+// show top 3 latest meetings on home
+const meetings = computed(() => meetingStore.meetings.slice(0, 3))
 
 // 대화가 한 번이라도 있었는지 (질문 기록 기준)
 const hasChatted = computed(() => lastQuery.value.length > 0);
@@ -344,31 +320,7 @@ onUnmounted(() => {
         <RouterLink to="/community" class="see-all">더보기 ></RouterLink>
       </div>
       <div class="meetings-grid">
-        <div v-for="meeting in meetings" :key="meeting.id" class="meeting-card">
-          <div class="card-header">
-            <span class="category">{{ meeting.category }}</span>
-            <span class="category-label">여자 모임</span>
-          </div>
-          <h3>{{ meeting.title }}</h3>
-          <div class="meeting-details-grid">
-            <div class="detail">
-              <span class="icon"><FlaticonIcon name="pin" :size="14" /></span>
-              <span>{{ meeting.location }}</span>
-            </div>
-            <div class="detail">
-              <span class="icon"><FlaticonIcon name="calendar" :size="14" /></span>
-              <span>{{ meeting.date }}</span>
-            </div>
-            <div class="detail">
-              <span class="icon"><FlaticonIcon name="clock" :size="14" /></span>
-              <span>{{ meeting.time }}</span>
-            </div>
-          </div>
-          <div class="participants">
-            <FlaticonIcon name="group" :size="14" /> {{ meeting.participants }}
-          </div>
-          <button class="join-btn">참가하기</button>
-        </div>
+        <MeetingCard v-for="meeting in meetings" :key="meeting.id" :meeting="meeting" />
       </div>
     </section>
   </div>
