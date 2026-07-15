@@ -33,6 +33,7 @@ const kakaoAvailable = ref<boolean | null>(null);
 const aiCatalog = ref<PublicPlace[]>([]);
 const isCatalogLoading = ref(true);
 
+// --- 팁 키워드 ---
 type Tip = {
   id: string;
   icon: string;
@@ -42,25 +43,63 @@ type Tip = {
   results: PublicPlace[];
 };
 
-const tips = ref<Tip[]>([
-  {
-    id: 'tip-1',
-    icon: '🏃‍♂️',
-    text: '빠르게 뛸 수 있는 평탄한 길',
-    isLoading: false,
-    error: '',
-    results: [],
-  },
-  { id: 'tip-2', icon: '🚶‍♀️', text: '경치 좋은 한강변', isLoading: false, error: '', results: [] },
-  {
-    id: 'tip-3',
-    icon: '📸',
-    text: '인생샷을 담을 수 있는 관광지',
-    isLoading: false,
-    error: '',
-    results: [],
-  },
-]);
+// 키워드 풀 — 필요하면 자유롭게 추가/수정 가능
+const tipPool = [
+  { icon: '🏃‍♂️', text: '빠르게 뛸 수 있는 평탄한 길' },
+  { icon: '🚶‍♀️', text: '경치 좋은 한강변' },
+  { icon: '📸', text: '인생샷을 담을 수 있는 관광지' },
+  { icon: '🌅', text: '노을이 예쁜 전망 명소' },
+  { icon: '☕', text: '분위기 좋은 카페 거리' },
+  { icon: '🌳', text: '나무 그늘 많은 산책로' },
+  { icon: '🛍️', text: '쇼핑하기 좋은 번화가' },
+  { icon: '🎨', text: '조용히 둘러볼 수 있는 문화시설' },
+  { icon: '🌊', text: '바다나 강이 보이는 야외 장소' },
+  { icon: '🌙', text: '야경이 예쁜 곳' },
+  { icon: '🐾', text: '반려동물과 함께 걷기 좋은 곳' },
+  { icon: '👨‍👩‍👧', text: '아이와 함께 가기 좋은 나들이 장소' },
+  { icon: '🚴', text: '자전거 타기 좋은 코스' },
+  { icon: '🍜', text: '먹거리가 많은 골목' },
+  { icon: '🏛️', text: '역사적인 분위기가 있는 곳' },
+];
+
+const createTip = (base: { icon: string; text: string }, index: number): Tip => ({
+  id: `tip-${base.text}-${index}-${Date.now()}`,
+  icon: base.icon,
+  text: base.text,
+  isLoading: false,
+  error: '',
+  results: [],
+});
+
+// 배열을 랜덤 셔플 (Fisher–Yates)
+const shuffle = <T,>(arr: T[]): T[] => {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
+const pickRandomTips = (count = 3, excludeTexts: string[] = []) => {
+  const available = tipPool.filter((t) => !excludeTexts.includes(t.text));
+  const pool = available.length >= count ? available : tipPool; // 후보가 부족하면 전체 풀에서
+  return shuffle(pool)
+    .slice(0, count)
+    .map((base, index) => createTip(base, index));
+};
+
+const tips = ref<Tip[]>(pickRandomTips(3));
+const isReshuffling = ref(false);
+
+const reshuffleTips = () => {
+  isReshuffling.value = true;
+  const currentTexts = tips.value.map((t) => t.text);
+  tips.value = pickRandomTips(3, currentTexts);
+  setTimeout(() => {
+    isReshuffling.value = false;
+  }, 300);
+};
 
 const buildTipPrompt = (question: string) => {
   return [
@@ -136,7 +175,6 @@ const runTipSearch = async (tip: Tip) => {
 const toMarkersSource = (p: any) => {
   if (typeof p.lat === 'number' && typeof p.lng === 'number')
     return { name: p.name || p.title || '장소', lat: p.lat, lng: p.lng };
-  // 방문자 데이터 필드: mapy(위도), mapx(경도)
   if (p.mapy && p.mapx)
     return { name: p.title || p.name || '장소', lat: Number(p.mapy), lng: Number(p.mapx) };
   return null;
@@ -165,7 +203,6 @@ const renderMarkers = () => {
     const s = toMarkersSource(p);
     if (s) sources.push(s);
   });
-  // 팁 카드에서 나온 AI 추천 결과도 지도에 반영
   tips.value.forEach((tip) => {
     tip.results.forEach((p) => {
       const s = toMarkersSource(p);
@@ -341,12 +378,18 @@ watch(
 
     <!-- AI Tips Section -->
     <section class="tips-section">
-      <h2><FlaticonIcon name="idea" :size="18" /> 이런 장소는 어때요?</h2>
+      <div class="tips-header">
+        <h2><FlaticonIcon name="idea" :size="18" /> 이런 장소는 어때요?</h2>
+        <button class="reshuffle-btn" :disabled="isReshuffling" @click="reshuffleTips">
+          🔄 다른 키워드 보기
+        </button>
+      </div>
+
       <p v-if="isCatalogLoading" class="catalog-loading-note">
         <span class="tip-spinner"></span> 추천에 쓸 장소 데이터를 불러오는 중이에요
       </p>
 
-      <div class="tips-grid">
+      <div class="tips-grid" :class="{ 'is-reshuffling': isReshuffling }">
         <div v-for="tip in tips" :key="tip.id" class="tip-card">
           <div class="tip-icon">{{ tip.icon }}</div>
           <p class="tip-text">"{{ tip.text }}"</p>
@@ -590,12 +633,44 @@ watch(
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
-.tips-section h2 {
-  text-align: center;
-  font-size: 1.3rem;
+.tips-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
   margin: 0 0 0.75rem;
+  position: relative;
+}
+
+.tips-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
   color: #333;
   font-weight: 600;
+}
+
+.reshuffle-btn {
+  position: absolute;
+  right: 0;
+  border: 1px solid #ffd3e2;
+  background: white;
+  color: #b23b73;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reshuffle-btn:hover:not(:disabled) {
+  border-color: #ff69b4;
+  background: #fff7fb;
+}
+
+.reshuffle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .catalog-loading-note {
@@ -613,6 +688,11 @@ watch(
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
   align-items: start;
+  transition: opacity 0.2s ease;
+}
+
+.tips-grid.is-reshuffling {
+  opacity: 0.4;
 }
 
 .tip-card {
@@ -810,6 +890,15 @@ watch(
 
   .tip-icon {
     font-size: 2rem;
+  }
+
+  .tips-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .reshuffle-btn {
+    position: static;
   }
 }
 </style>
