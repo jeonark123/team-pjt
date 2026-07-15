@@ -3,6 +3,8 @@ import { RouterLink } from 'vue-router'
 import { ref, onMounted } from 'vue'
 
 const mapContainer = ref<HTMLDivElement | null>(null)
+const kakaoMap = ref<any>(null)
+const markerInstances = ref<any[]>([])
 
 const places = [
   { id: 1, name: '한강공원', type: '러닝', rating: 4.8, icon: '🏞️', lat: 37.525, lng: 126.93 },
@@ -37,20 +39,26 @@ const initializeMap = () => {
   }
 
   const map = new kakao.maps.Map(container, options)
+  kakaoMap.value = map
 
   mapLocations.forEach((loc) => {
     const markerPosition = new kakao.maps.LatLng(loc.lat, loc.lng)
-    const marker = new kakao.maps.Marker({
-      map,
-      position: markerPosition,
-    })
-
-    const infowindow = new kakao.maps.InfoWindow({
-      content: `<div class="kakao-marker-content"><span class="marker-emoji">${loc.icon}</span><span>${loc.name}</span></div>`,
-    })
-
-    infowindow.open(map, marker)
+    const marker = new kakao.maps.Marker({ map, position: markerPosition })
+    const infowindow = new kakao.maps.InfoWindow({ content: `<div class="kakao-marker-content"><span class="marker-emoji">${loc.icon}</span><span>${loc.name}</span></div>` })
+    kakao.maps.event.addListener(marker, 'mouseover', () => infowindow.open(map, marker))
+    kakao.maps.event.addListener(marker, 'mouseout', () => infowindow.close())
+    markerInstances.value.push(marker)
   })
+}
+
+const focusPlace = (place: any) => {
+  const kakao = (window as any).kakao
+  if (!kakao || !kakaoMap.value || !place) return
+  if (place.lat && place.lng) {
+    const center = new kakao.maps.LatLng(place.lat, place.lng)
+    kakaoMap.value.setCenter(center)
+    kakaoMap.value.setLevel && kakaoMap.value.setLevel(5)
+  }
 }
 
 onMounted(() => {
@@ -86,7 +94,7 @@ onMounted(() => {
           <RouterLink to="/places" class="see-all">더보기 ></RouterLink>
         </div>
         <div class="places-grid">
-          <div v-for="place in places" :key="place.id" class="place-card">
+          <div v-for="place in places" :key="place.id" class="place-card" @click="focusPlace(place)">
             <div class="place-icon">{{ place.icon }}</div>
             <h3>{{ place.name }}</h3>
             <p class="place-type">{{ place.type }}</p>

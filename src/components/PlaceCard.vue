@@ -14,10 +14,13 @@ interface Place {
 defineProps<{
   place: Place
 }>()
+const emit = defineEmits<{
+  (e: 'select', place: Place): void
+}>()
 </script>
 
 <template>
-  <div class="place-card">
+  <div class="place-card" @click="emit('select', place)">
     <div class="place-image">
       <span class="image-emoji">{{ place.image }}</span>
     </div>

@@ -78,6 +78,16 @@ const renderMarkers = () => {
   markerInstances.value = createdMarkers
 }
 
+const focusOnPlace = (place: any) => {
+  const kakao = (window as any).kakao
+  if (!kakao || !kakaoMap.value) return
+  const s = toMarkersSource(place)
+  if (!s) return
+  const center = new kakao.maps.LatLng(s.lat, s.lng)
+  kakaoMap.value.setCenter(center)
+  kakaoMap.value.setLevel && kakaoMap.value.setLevel(5)
+}
+
 const initializeMap = () => {
   const kakao = (window as any).kakao
   const container = mapContainer.value
@@ -170,7 +180,7 @@ watch(showDatasets, () => { loadDatasets() }, { deep: true })
     </div>
     <section class="results-section">
       <div v-if="filteredPlaces.length > 0" class="places-grid">
-        <PlaceCard v-for="place in filteredPlaces" :key="place.id" :place="place" />
+        <PlaceCard v-for="place in filteredPlaces" :key="place.id" :place="place" @select="focusOnPlace" />
       </div>
       <div v-else class="no-results">
         <div class="empty-state">
