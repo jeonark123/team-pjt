@@ -22,6 +22,23 @@ const selectedPlaceId = ref<number | null>(null)
 const selectedCoords = ref<{ lat: number; lon: number } | null>(null)
 const placeQuery = ref('')
 const suggestions = ref<any[]>([])
+const placeInput = ref<HTMLInputElement | null>(null)
+const dropdownStyle = ref<any>({})
+
+const updateDropdownPosition = () => {
+  const el = placeInput.value
+  if (!el) return
+  const r = el.getBoundingClientRect()
+  dropdownStyle.value = {
+    position: 'fixed',
+    top: `${r.bottom + 6}px`,
+    left: `${r.left}px`,
+    width: `${r.width}px`,
+    zIndex: 9999,
+  }
+}
+window.addEventListener('resize', updateDropdownPosition)
+window.addEventListener('scroll', updateDropdownPosition, true)
 
 const onPlaceInput = (q: string) => {
   placeQuery.value = q
@@ -30,6 +47,8 @@ const onPlaceInput = (q: string) => {
   const ql = q.toLowerCase()
   // show local matches only (no full list on empty input)
   suggestions.value = placesData.filter(p => p.name.toLowerCase().includes(ql)).slice(0, 8)
+  // update dropdown position
+  setTimeout(updateDropdownPosition, 0)
   // if no local suggestions, try Kakao keyword search
   if (suggestions.value.length === 0) {
     const kakao = (window as any).kakao
@@ -194,12 +213,13 @@ const handleSubmit = async () => {
         <div class="form-group autocomplete">
           <label>장소 *</label>
           <input
+            ref="placeInput"
             v-model="placeQuery"
             @input="onPlaceInput(placeQuery)"
             type="text"
             placeholder="검색어를 입력하면 장소가 표시됩니다 (예: 여의도 한강공원)"
           />
-          <ul v-if="suggestions.length" class="suggestions-list">
+          <ul v-if="suggestions.length" class="suggestions-list" :style="dropdownStyle">
             <li v-for="s in suggestions" :key="s.id" @click="pickSuggestion(s)">{{ s.name }}</li>
           </ul>
           <div v-if="selectedPlaceId !== null" class="selected-place">
