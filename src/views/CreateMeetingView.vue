@@ -20,6 +20,30 @@ const formData = ref({
 
 const selectedPlaceId = ref<number | null>(null)
 const selectedCoords = ref<{ lat: number; lon: number } | null>(null)
+const placeQuery = ref('')
+const suggestions = ref<any[]>([])
+
+const onPlaceInput = (q: string) => {
+  placeQuery.value = q
+  suggestions.value = []
+  if (!q || q.trim().length < 1) return
+  const ql = q.toLowerCase()
+  // show local matches only (no full list on empty input)
+  suggestions.value = placesData.filter(p => p.name.toLowerCase().includes(ql)).slice(0, 8)
+}
+
+const pickSuggestion = (p: any) => {
+  selectedPlaceId.value = p.id
+  formData.value.location = p.name
+  selectedCoords.value = (p.lat && p.lng) ? { lat: p.lat, lon: p.lng } : null
+  placeQuery.value = p.name
+  suggestions.value = []
+}
+
+const clearSelection = () => {
+  selectedPlaceId.value = null
+  selectedCoords.value = null
+}
 
 const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string) => {
   const key = import.meta.env.VITE_OPENWEATHER_KEY
@@ -49,6 +73,11 @@ const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string) 
 }
 
 const handleSubmit = async () => {
+  // if no place selected from list, use free text input
+  if (selectedPlaceId.value === null) {
+    formData.value.location = placeQuery.value
+  }
+
   if (!formData.value.title || !formData.value.location || !formData.value.date) {
     alert('필수 항목을 입력해주세요')
     return
@@ -141,18 +170,24 @@ const handleSubmit = async () => {
           <h2>위치 & 일시</h2>
         </div>
 
-        <div class="form-group">
+        <div class="form-group autocomplete">
           <label>장소 *</label>
-          <select v-model.number="selectedPlaceId" @change="() => { const p = placesData.find(x=>x.id===selectedPlaceId); if(p) { formData.location = p.name } }">
-            <option :value="null">직접 입력 또는 선택</option>
-            <option v-for="p in placesData" :key="p.id" :value="p.id">{{ p.name }}</option>
-          </select>
+          <input
+            v-model="placeQuery"
+            @input="onPlaceInput(placeQuery)"
+            type="text"
+            placeholder="검색어를 입력하면 장소가 표시됩니다 (예: 여의도 한강공원)"
+          />
+          <ul v-if="suggestions.length" class="suggestions-list">
+            <li v-for="s in suggestions" :key="s.id" @click="pickSuggestion(s)">{{ s.name }}</li>
+          </ul>
           <div v-if="selectedPlaceId !== null" class="selected-place">
             <div class="place-preview">
               <div class="emoji">{{ placesData.find(x=>x.id===selectedPlaceId)?.image }}</div>
               <div class="info">
                 <div class="name">{{ placesData.find(x=>x.id===selectedPlaceId)?.name }}</div>
                 <div class="desc">{{ placesData.find(x=>x.id===selectedPlaceId)?.description }}</div>
+                <button type="button" @click="clearSelection">직접 입력으로 변경</button>
               </div>
             </div>
           </div>
@@ -326,6 +361,29 @@ const handleSubmit = async () => {
 .place-preview .emoji { font-size:1.8rem }
 .place-preview .name { font-weight:700 }
 .place-preview .desc { color:#666; font-size:0.9rem }
+
+.autocomplete .suggestions-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  max-height: 220px;
+  overflow: auto;
+  z-index: 40;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.autocomplete .suggestions-list li {
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+.autocomplete .suggestions-list li:hover { background: #fff5f8 }
+.selected-place button { margin-top: 0.5rem; background: transparent; border: 1px solid #ffd6e7; color:#ff1493; padding:6px 8px; border-radius:6px }
 
 .form-group input:focus,
 .form-group select:focus,
