@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { ref, onMounted } from 'vue'
+
+const mapContainer = ref<HTMLDivElement | null>(null)
 
 const places = [
   { id: 1, name: '한강공원', type: '러닝', rating: 4.8, icon: '🏞️', lat: 37.525, lng: 126.93 },
@@ -19,6 +22,40 @@ const mapLocations = [
   { name: '남산타워', lat: 37.552, lng: 126.988, icon: '🗼' },
   { name: '강남역', lat: 37.497, lng: 127.028, icon: '🛍️' },
 ]
+
+const initializeMap = () => {
+  const kakao = (window as any).kakao
+  const container = mapContainer.value
+
+  if (!kakao || !container) {
+    return
+  }
+
+  const options = {
+    center: new kakao.maps.LatLng(37.531, 126.986),
+    level: 7,
+  }
+
+  const map = new kakao.maps.Map(container, options)
+
+  mapLocations.forEach((loc) => {
+    const markerPosition = new kakao.maps.LatLng(loc.lat, loc.lng)
+    const marker = new kakao.maps.Marker({
+      map,
+      position: markerPosition,
+    })
+
+    const infowindow = new kakao.maps.InfoWindow({
+      content: `<div class="kakao-marker-content"><span class="marker-emoji">${loc.icon}</span><span>${loc.name}</span></div>`,
+    })
+
+    infowindow.open(map, marker)
+  })
+}
+
+onMounted(() => {
+  initializeMap()
+})
 </script>
 
 <template>
@@ -62,28 +99,8 @@ const mapLocations = [
       <section class="map-section">
         <h2>📍 추천 장소 지도</h2>
         <div class="map-container">
-          <svg viewBox="0 0 500 400" class="map">
-            <!-- 서울 배경 -->
-            <rect width="500" height="400" fill="#e8f5e9" />
-            
-            <!-- 한강 표현 -->
-            <path d="M 0 200 Q 250 180 500 200" stroke="#64b5f6" stroke-width="3" fill="none" />
-            
-            <!-- 도시 영역 표현 -->
-            <rect x="50" y="80" width="400" height="280" fill="#fff9c4" opacity="0.3" rx="10" />
-            
-            <!-- 마커 포인트들 -->
-            <g v-for="(loc, idx) in mapLocations" :key="idx" class="marker">
-              <circle :cx="(loc.lng - 126.8) * 100 + 250" :cy="(37.6 - loc.lat) * 150 + 100" r="20" fill="#FFB6C1" stroke="#FF1493" stroke-width="2" />
-              <text :x="(loc.lng - 126.8) * 100 + 250" :y="(37.6 - loc.lat) * 150 + 110" text-anchor="middle" font-size="14" font-weight="bold">{{ loc.icon }}</text>
-              
-              <!-- 라벨 -->
-              <text :x="(loc.lng - 126.8) * 100 + 250" :y="(37.6 - loc.lat) * 150 + 45" text-anchor="middle" font-size="11" fill="#333" font-weight="600">
-                {{ loc.name }}
-              </text>
-            </g>
-          </svg>
-        </div>
+        <div ref="mapContainer" class="map"></div>
+      </div>
       </section>
     </div>
 
