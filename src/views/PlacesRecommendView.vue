@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import PlaceCard from '@/components/PlaceCard.vue'
 import { placesData } from '@/data/mockData'
 
@@ -16,6 +16,107 @@ const filteredPlaces = computed(() => {
     return typeMatch && searchMatch
   })
 })
+
+const mapContainer = ref<HTMLDivElement | null>(null)
+const kakaoMap = ref<any>(null)
+const markerInstances = ref<any[]>([])
+const markerClusterer = ref<any>(null)
+const showCluster = ref<boolean>(true)
+const externalPlaces = ref<any[]>([])
+const showDatasets = ref({ travel: false, culture: false, leisure: false })
+
+const toMarkersSource = (p: any) => {
+  if (p.lat && p.lng) return { name: p.name || p.title || '장소', lat: p.lat, lng: p.lng }
+  // 방문자 데이터 필드: mapy(위도), mapx(경도)
+  if (p.mapy && p.mapx) return { name: p.title || p.name || '장소', lat: Number(p.mapy), lng: Number(p.mapx) }
+  // 일부 파일은 mapy/mapx 문자열이거나 없는 경우가 있음
+  return null
+}
+
+const renderMarkers = () => {
+  const kakao = (window as any).kakao
+  if (!kakao || !kakaoMap.value) return
+
+  // 기존 마커 제거
+  markerInstances.value.forEach(m => m.setMap && m.setMap(null))
+  markerInstances.value = []
+  if (markerClusterer.value && markerClusterer.value.clear) {
+    try { markerClusterer.value.clear() } catch (e) { markerClusterer.value = null }
+    markerClusterer.value = null
+  }
+
+  const sources: any[] = []
+  // mock data
+  placesData.forEach((p: any) => { if (p.lat && p.lng) sources.push({ name: p.name, lat: p.lat, lng: p.lng }) })
+  // external
+  externalPlaces.value.forEach(p => { const s = toMarkersSource(p); if (s) sources.push(s) })
+
+  const createdMarkers: any[] = []
+  sources.forEach(s => {
+    const pos = new kakao.maps.LatLng(s.lat, s.lng)
+    const marker = new kakao.maps.Marker({ position: pos })
+    const infowindow = new kakao.maps.InfoWindow({ content: `<div style="padding:6px">${s.name}</div>` })
+    kakao.maps.event.addListener(marker, 'mouseover', () => infowindow.open(kakaoMap.value, marker))
+    kakao.maps.event.addListener(marker, 'mouseout', () => infowindow.close())
+    createdMarkers.push(marker)
+  })
+
+  if (showCluster.value && (window as any).kakao && (window as any).kakao.maps && (window as any).MarkerClusterer) {
+    // Kakao MarkerClusterer 사용
+    try {
+      markerClusterer.value = new (window as any).MarkerClusterer({ map: kakaoMap.value, markers: createdMarkers, averageCenter: true, minLevel: 7 })
+    } catch (e) {
+      // fallback: 개별 마커를 지도에 올림
+      createdMarkers.forEach(m => m.setMap(kakaoMap.value))
+    }
+  } else {
+    // 클러스터러 미사용 또는 미지원 시 개별 마커를 지도에 올림
+    createdMarkers.forEach(m => m.setMap(kakaoMap.value))
+  }
+
+  markerInstances.value = createdMarkers
+}
+
+const initializeMap = () => {
+  const kakao = (window as any).kakao
+  const container = mapContainer.value
+  if (!kakao || !container) return
+
+  const options = { center: new kakao.maps.LatLng(37.531, 126.986), level: 7 }
+  kakaoMap.value = new kakao.maps.Map(container, options)
+  renderMarkers()
+}
+
+const fetchDataset = async (fileName: string) => {
+  try {
+    const res = await fetch(`/data/${fileName}`)
+    if (!res.ok) return []
+    const json = await res.json()
+    // API 형식: { items: [...] } 또는 { items: { item: [...] } }
+    const items = json.items || (json.items && json.items.item) || json
+    return Array.isArray(items) ? items : (items.item || [])
+  } catch (err) {
+    return []
+  }
+}
+
+const loadDatasets = async () => {
+  // 파일을 public/data/에 넣어두면 자동으로 로드 가능
+  const promises: Promise<any[]>[] = []
+  if (showDatasets.value.travel) promises.push(fetchDataset('서울_여행코스.json'))
+  if (showDatasets.value.culture) promises.push(fetchDataset('서울_문화시설.json'))
+  if (showDatasets.value.leisure) promises.push(fetchDataset('서울_레포츠.json'))
+
+  const results = await Promise.all(promises)
+  externalPlaces.value = results.flat()
+  renderMarkers()
+}
+
+onMounted(() => {
+  initializeMap()
+})
+
+watch(showDatasets, () => { loadDatasets() }, { deep: true })
 </script>
 
 <template>
@@ -45,6 +146,19 @@ const filteredPlaces = computed(() => {
     </section>
 
     <!-- Places Grid -->
+    <!-- Map Section -->
+    <section class="map-section">
+      <h2>📍 추천 장소 지도</h2>
+      <div class="map-controls">
+        <label><input type="checkbox" v-model="showDatasets.travel" /> 여행코스</label>
+        <label><input type="checkbox" v-model="showDatasets.culture" /> 문화시설</label>
+        <label><input type="checkbox" v-model="showDatasets.leisure" /> 레포츠</label>
+        <label style="margin-left:12px"><input type="checkbox" v-model="showCluster" /> 클러스터링 사용</label>
+      </div>
+      <div class="map-container">
+        <div ref="mapContainer" class="map"></div>
+      </div>
+    </section>
     <section class="results-section">
       <div v-if="filteredPlaces.length > 0" class="places-grid">
         <PlaceCard v-for="place in filteredPlaces" :key="place.id" :place="place" />
@@ -181,6 +295,54 @@ const filteredPlaces = computed(() => {
 /* Results Section */
 .results-section {
   min-height: 300px;
+}
+
+/* Map Section */
+.map-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.map-section h2 {
+  font-size: 1.1rem;
+  margin: 0 0 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.map-container {
+  width: 100%;
+  height: 280px;
+  background: white;
+  border: 2px solid #FFE4EC;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.map-controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+.map-controls label {
+  font-size: 0.9rem;
+  color: #444;
+}
+.map-controls input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+.map-controls label[style] {
+  margin-left: 12px;
 }
 
 .places-grid {
