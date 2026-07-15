@@ -383,6 +383,10 @@ const handleSubmit = async () => {
 .place-preview .name { font-weight:700 }
 .place-preview .desc { color:#666; font-size:0.9rem }
 
+.autocomplete {
+  position: relative;
+}
+
 .autocomplete .suggestions-list {
   position: absolute;
   left: 0;
