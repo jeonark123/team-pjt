@@ -1,105 +1,574 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+
+const showSidebar = ref(false)
 </script>
 
 <template>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">T</span>
-        <div>
-          <h1>Team Project</h1>
-          <p>Vue 3 + TypeScript starter</p>
+  <div id="app" class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <button class="sidebar-toggle" @click="showSidebar = !showSidebar">☰</button>
+        
+        <RouterLink to="/" class="logo">
+          <span class="logo-icon">🏃</span>
+          <span class="logo-text">Local Mate</span>
+        </RouterLink>
+
+        <div class="search-box">
+          <input type="text" placeholder="관심 장소를 검색하세요" />
+          <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="header-actions">
+          <button class="icon-btn" title="알림">🔔</button>
+          <button class="icon-btn" title="채팅">💬</button>
+          <button class="icon-btn profile-btn" title="프로필">👤</button>
         </div>
       </div>
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
     </header>
 
-    <main class="content">
-      <RouterView />
-    </main>
+    <div class="layout">
+      <!-- Sidebar Navigation -->
+      <aside :class="['sidebar', { active: showSidebar }]">
+        <nav class="nav">
+          <RouterLink to="/" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">홈</span>
+          </RouterLink>
+          <RouterLink to="/places" class="nav-item">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-label">장소추천</span>
+          </RouterLink>
+          <RouterLink to="/community" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">동행게시판</span>
+          </RouterLink>
+          <RouterLink to="/create" class="nav-item nav-cta">
+            <span class="nav-icon">➕</span>
+            <span class="nav-label">모임만들기</span>
+          </RouterLink>
+        </nav>
+
+      
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <RouterView />
+      </main>
+
+      <!-- Right Sidebar -->
+      <aside class="right-sidebar">
+        <div class="ai-section">
+          <div class="ai-header">
+            <span class="ai-icon">🤖</span>
+            <h3>AI 어시스턴트</h3>
+          </div>
+          <p class="ai-text">당신에게 딱 맞는<br/>모임을 찾아드려요!</p>
+          <button class="ai-btn">💬 대화 시작</button>
+        </div>
+
+        <div class="notice-section">
+          <h3>📢 공지사항</h3>
+          <div class="notice-item">
+            <p class="notice-title">✨ AI 모임 추천<br/>시작!</p>
+            <p class="notice-time">오늘</p>
+          </div>
+          <div class="notice-item">
+            <p class="notice-title">☀️ 날씨 기반<br/>활동 가이드</p>
+            <p class="notice-time">어제</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="footer">
+      <p>© 2024 Local Mate. 모두를 위한 똑똑한 커뮤니티</p>
+    </footer>
   </div>
 </template>
 
 <style scoped>
-.app-shell {
-  min-height: 100vh;
+* {
+  box-sizing: border-box;
+}
+
+.app {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  background: #f9f9f9;
 }
 
-.topbar {
+/* Header Styles */
+.header {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.header-content {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  padding: 1.25rem 2rem;
-  border-bottom: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-}
-
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  color: white;
-  font-weight: 700;
-}
-
-.brand h1 {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.brand p {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-nav {
-  display: flex;
   gap: 1rem;
 }
 
-nav a {
-  padding: 0.5rem 0.85rem;
-  border-radius: 999px;
-  color: var(--color-text);
-  transition: background-color 0.2s ease;
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-dark);
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.3s;
 }
 
-nav a:hover,
-nav a.router-link-exact-active {
-  background: var(--color-background-soft);
+.sidebar-toggle:hover {
+  background: var(--bg-light);
 }
 
-.content {
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+}
+
+.logo-text {
+  font-size: 1.3rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.search-box {
   flex: 1;
-  padding: 2rem;
+  max-width: 400px;
+  position: relative;
 }
 
-@media (max-width: 720px) {
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.8rem;
+.search-box input {
+  width: 100%;
+  padding: 0.65rem 2.5rem 0.65rem 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: #f5f5f5;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #FF1493;
+  background: white;
+  box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: #e8e8e8;
+  transform: scale(1.05);
+}
+
+.profile-btn {
+  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  color: white;
+}
+
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 200px 1fr 280px;
+  gap: 1.5rem;
+  flex: 1;
+  max-width: 1800px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 1.5rem;
+}
+
+/* Sidebar */
+.sidebar {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem 0;
+  height: fit-content;
+  position: sticky;
+  top: 80px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  text-decoration: none;
+  color: #333;
+  border-radius: 10px;
+  transition: all 0.3s;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.nav-item:hover {
+  background: rgba(255, 20, 147, 0.08);
+  color: #FF1493;
+}
+
+.nav-item.router-link-active {
+  background: rgba(255, 20, 147, 0.15);
+  color: #FF1493;
+  border-left: 3px solid #FF1493;
+  padding-left: calc(1rem - 3px);
+}
+
+.nav-cta {
+  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  color: white;
+  margin: 1rem 0.5rem 0;
+  border-radius: 10px;
+}
+
+.nav-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
+}
+
+.nav-icon {
+  font-size: 1.3rem;
+  min-width: 1.3rem;
+}
+
+.nav-label {
+  font-size: 0.95rem;
+}
+
+.sidebar-footer {
+  margin-top: 2rem;
+  padding: 0 0.5rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.sidebar-info {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.info-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #333;
+  margin: 0 0 0.25rem;
+}
+
+.info-desc {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Right Sidebar */
+.right-sidebar {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  height: fit-content;
+  position: sticky;
+  top: 80px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ai-section {
+  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 2px solid rgba(255, 192, 203, 0.3);
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ai-icon {
+  font-size: 1.8rem;
+}
+
+.ai-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.ai-text {
+  font-size: 0.9rem;
+  color: #333;
+  margin: 0.75rem 0 1rem;
+  line-height: 1.4;
+}
+
+.ai-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+}
+
+.ai-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
+}
+
+.notice-section h3 {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.notice-item {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: #f9f9f9;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-left: 3px solid #FFB6C1;
+}
+
+.notice-item:hover {
+  background: rgba(255, 20, 147, 0.08);
+  transform: translateX(4px);
+}
+
+.notice-title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.4;
+}
+
+.notice-time {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* Footer */
+.footer {
+  background: white;
+  padding: 1.5rem;
+  text-align: center;
+  color: #888;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .layout {
+    grid-template-columns: 170px 1fr 250px;
+    gap: 1rem;
+    padding: 1rem;
   }
 
-  .content {
-    padding: 1.25rem;
+  .search-box {
+    max-width: 250px;
+  }
+
+  .main-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .sidebar.active {
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 60px;
+    width: 200px;
+    height: calc(100vh - 60px);
+    border-radius: 0;
+    z-index: 99;
+    overflow-y: auto;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .right-sidebar {
+    display: none;
+  }
+
+  .sidebar-toggle {
+    display: block;
+  }
+
+  .header-content {
+    gap: 0.75rem;
+  }
+
+  .search-box {
+    max-width: 200px;
+  }
+
+  .main-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .search-box {
+    flex: 1;
+    max-width: 150px;
+  }
+
+  .search-box input {
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .header-actions {
+    gap: 0.25rem;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+
+  .main-content {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .sidebar.active {
+    width: 100%;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .logo-icon {
+    font-size: 1.5rem;
+  }
+
+  .search-box {
+    display: none;
+  }
+
+  .header-actions {
+    gap: 0.2rem;
+  }
+
+  .icon-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+
+  .main-content {
+    padding: 0.75rem;
   }
 }
 </style>
