@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import FlaticonIcon from '@/components/FlaticonIcon.vue'
 
 const mapContainer = ref<HTMLDivElement | null>(null)
 const kakaoMap = ref<any>(null)
@@ -88,12 +89,12 @@ onMounted(() => {
       <!-- Left: Places Section -->
       <section class="places-section">
         <div class="section-title">
-          <h2>✨ AI 추천 장소</h2>
+          <h2><FlaticonIcon name="sparkles" :size="18" /> AI 추천 장소</h2>
           <RouterLink to="/places" class="see-all">더보기 ></RouterLink>
         </div>
         <div class="places-grid">
           <div v-for="place in places" :key="place.id" class="place-card" @click="focusPlace(place)">
-            <div class="place-icon">{{ place.icon }}</div>
+            <div class="place-icon"><FlaticonIcon name="star" :size="18" /></div>
             <h3>{{ place.name }}</h3>
             <p class="place-type">{{ place.type }}</p>
             <p class="place-rating">⭐ {{ place.rating }}</p>
@@ -103,7 +104,7 @@ onMounted(() => {
 
       <!-- Right: Map Section -->
       <section class="map-section">
-        <h2>📍 추천 장소 지도</h2>
+        <h2><FlaticonIcon name="pin" :size="18" /> 추천 장소 지도</h2>
         <div class="map-container">
         <div ref="mapContainer" class="map"></div>
       </div>
@@ -113,7 +114,7 @@ onMounted(() => {
     <!-- Meeting Board Section (No Tabs) -->
     <section class="meetings-section">
       <div class="section-title">
-        <h2>👥 동행 게시판</h2>
+        <h2><FlaticonIcon name="group" :size="18" /> 동행 게시판</h2>
         <RouterLink to="/community" class="see-all">더보기 ></RouterLink>
       </div>
       <div class="meetings-grid">
@@ -125,19 +126,19 @@ onMounted(() => {
           <h3>{{ meeting.title }}</h3>
           <div class="meeting-details-grid">
             <div class="detail">
-              <span class="icon">📍</span>
+              <span class="icon"><FlaticonIcon name="pin" :size="14" /></span>
               <span>{{ meeting.location }}</span>
             </div>
             <div class="detail">
-              <span class="icon">📅</span>
+              <span class="icon"><FlaticonIcon name="calendar" :size="14" /></span>
               <span>{{ meeting.date }}</span>
             </div>
             <div class="detail">
-              <span class="icon">🕐</span>
+              <span class="icon"><FlaticonIcon name="clock" :size="14" /></span>
               <span>{{ meeting.time }}</span>
             </div>
           </div>
-          <div class="participants">👥 {{ meeting.participants }}</div>
+          <div class="participants"><FlaticonIcon name="group" :size="14" /> {{ meeting.participants }}</div>
           <button class="join-btn">참가하기</button>
         </div>
       </div>
@@ -166,19 +167,20 @@ onMounted(() => {
 }
 
 .hero-content h1 {
-  font-size: 1.8rem;
-  margin: 0 0 0.75rem;
+  font-size: 3rem;
+  margin: 0 0 0.9rem;
   color: #333;
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 .hero-content p {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #555;
   margin: 0 0 1rem;
-  line-height: 1.4;
-}
+  line-height: 1.5;
+  font-weight: 800;}
 
 .cta-buttons {
   display: flex;

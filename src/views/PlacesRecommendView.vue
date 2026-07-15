@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import PlaceCard from '@/components/PlaceCard.vue'
+import FlaticonIcon from '@/components/FlaticonIcon.vue'
 import { placesData } from '@/data/mockData'
 
 const selectedType = ref<string>('전체')
@@ -138,12 +139,12 @@ watch(showDatasets, () => { loadDatasets() }, { deep: true })
   <div class="places-view">
     <!-- Header Section -->
     <section class="header-section">
-      <h1>🎯 장소 추천</h1>
+      <h1><FlaticonIcon name="map" :size="24" /> 장소 추천</h1>
       <p>공공데이터 기반 AI가 당신에게 딱 맞는 장소를 추천해드려요!</p>
 
       <div class="search-filter">
         <div class="search-box">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><FlaticonIcon name="search" :size="16" /></span>
           <input v-model="searchQuery" type="text" placeholder="장소를 검색해보세요..." />
         </div>
 
@@ -163,7 +164,7 @@ watch(showDatasets, () => { loadDatasets() }, { deep: true })
     <!-- Places Grid -->
     <!-- Map Section -->
     <section class="map-section">
-      <h2>📍 추천 장소 지도</h2>
+      <h2><FlaticonIcon name="pin" :size="18" /> 추천 장소 지도</h2>
       <div class="map-controls">
         <label><input type="checkbox" v-model="showDatasets.travel" /> 여행코스</label>
         <label><input type="checkbox" v-model="showDatasets.culture" /> 문화시설</label>
@@ -184,7 +185,7 @@ watch(showDatasets, () => { loadDatasets() }, { deep: true })
       </div>
       <div v-else class="no-results">
         <div class="empty-state">
-          <span class="empty-icon">🔍</span>
+          <span class="empty-icon"><FlaticonIcon name="search" :size="36" /></span>
           <h3>검색 결과가 없습니다</h3>
           <p>다른 검색어를 시도해보세요.</p>
         </div>
@@ -193,7 +194,7 @@ watch(showDatasets, () => { loadDatasets() }, { deep: true })
 
     <!-- AI Tips Section -->
     <section class="tips-section">
-      <h2>💡 이런 장소는 어때요?</h2>
+      <h2><FlaticonIcon name="idea" :size="18" /> 이런 장소는 어때요?</h2>
       <div class="tips-grid">
         <div class="tip-card">
           <div class="tip-icon">🏃‍♂️</div>
