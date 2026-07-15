@@ -249,11 +249,16 @@ onUnmounted(() => {
     <!-- Hero Banner -->
     <section class="hero">
       <div class="hero-content">
-        <h1>진짜 연결을 위한<br />새로운 커뮤니티</h1>
-        <p>혼자가 아니야, 함께 해요!<br />관광 동행 및 새로운 만남</p>
+        <div class="hero-text-block">
+          <h1>오늘의 우연이<br />특별한 인연이 되도록</h1>
+          <p>AI가 당신의 취향을 연결합니다<br />여행과 모임, 새로운 만남을 지금 시작해보세요</p>
+        </div>
         <div class="cta-buttons">
-          <RouterLink to="/create" class="btn btn-pink">지금 시작하기</RouterLink>
-          <RouterLink to="/community" class="btn btn-outline">이용 가이드</RouterLink>
+          <RouterLink to="/create" class="btn btn-pink">
+            <span class="btn-icon">＋</span>
+            모임 만들기
+          </RouterLink>
+          <RouterLink to="/community" class="btn btn-outline">모임 찾기</RouterLink>
         </div>
       </div>
       <div class="hero-image">
@@ -392,11 +397,21 @@ onUnmounted(() => {
 
 .hero-content {
   margin-left: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.hero-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .hero-content h1 {
   font-size: 3rem;
-  margin: 0 0 0.9rem;
+  margin: 0;
   color: #333;
   font-weight: 800;
   line-height: 1;
@@ -406,7 +421,7 @@ onUnmounted(() => {
 .hero-content p {
   font-size: 1rem;
   color: #555;
-  margin: 0 0 1rem;
+  margin: 0;
   line-height: 1.5;
   font-weight: 800;
 }
@@ -415,19 +430,29 @@ onUnmounted(() => {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+  margin-top: 0.25rem;
 }
 
 .btn {
-  padding: 0.65rem 1.3rem;
+  padding: 0.7rem 1.4rem;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   transition: all 0.3s;
   border: none;
   cursor: pointer;
-  font-size: 0.85rem;
-  display: inline-block;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   text-align: center;
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .btn-pink {
@@ -468,7 +493,8 @@ onUnmounted(() => {
 .main-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 1.75rem;
+  margin-top: 1.25rem;
 }
 
 /* Places Section */
@@ -477,6 +503,7 @@ onUnmounted(() => {
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 0;
 }
 
 .section-title {
@@ -608,6 +635,7 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
@@ -666,6 +694,7 @@ onUnmounted(() => {
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 0;
 }
 
 .map-section-header {
@@ -742,6 +771,7 @@ onUnmounted(() => {
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-top: 1.25rem;
 }
 
 .meetings-grid {
@@ -858,11 +888,16 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .home-view {
-    gap: 1rem;
+    gap: 1.25rem;
   }
 
   .hero {
-    padding: 1rem;
+    padding: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  .main-grid {
+    gap: 1.25rem;
   }
 
   .hero-content h1 {

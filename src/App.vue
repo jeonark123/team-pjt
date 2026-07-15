@@ -52,7 +52,7 @@ onUnmounted(() => {
         <nav class="nav">
           <RouterLink to="/" class="nav-item">
             <span class="nav-icon"><FlaticonIcon name="home" :size="18" /></span>
-            <span class="nav-label">홈</span>
+            <span class="nav-label">HOME</span>
           </RouterLink>
           <RouterLink to="/places" class="nav-item">
             <span class="nav-icon"><FlaticonIcon name="map" :size="18" /></span>
@@ -61,10 +61,6 @@ onUnmounted(() => {
           <RouterLink to="/community" class="nav-item">
             <span class="nav-icon"><FlaticonIcon name="group" :size="18" /></span>
             <span class="nav-label">동행게시판</span>
-          </RouterLink>
-          <RouterLink to="/create" class="nav-item nav-cta">
-            <span class="nav-icon"><FlaticonIcon name="plus" :size="18" /></span>
-            <span class="nav-label">모임만들기</span>
           </RouterLink>
         </nav>
       </aside>
@@ -77,7 +73,7 @@ onUnmounted(() => {
       <!-- Right Sidebar -->
       <aside class="right-sidebar">
         <div class="notice-section">
-          <h3><FlaticonIcon name="sparkles" :size="16" /> 공지사항</h3>
+          <h3><FlaticonIcon name="sparkles" :size="16" /> NEW</h3>
           <div class="notice-item">
             <p class="notice-title">
               <FlaticonIcon name="sparkles" :size="14" /> AI 모임 추천<br />시작!
@@ -112,7 +108,7 @@ onUnmounted(() => {
     </div>
 
     <footer class="footer">
-      <p>© 2026 sunset. 모두를 위한 똑똑한 커뮤니티</p>
+      <p>© 2026 sunset. 가까운 거리에서, 더 가까운 인연을</p>
     </footer>
   </div>
 </template>
@@ -142,10 +138,11 @@ onUnmounted(() => {
 .header-content {
   max-width: 1800px;
   margin: 0 auto;
-  padding: 0.75rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
+  position: relative;
 }
 
 .sidebar-toggle {
@@ -169,11 +166,12 @@ onUnmounted(() => {
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
-  min-width: 120px;
+  min-width: 132px;
+  margin-left: 0.4rem;
 }
 
 .logo-img {
-  height: 40px;
+  height: 52px;
   width: auto;
   display: block;
 }
@@ -197,6 +195,7 @@ onUnmounted(() => {
   max-width: 560px;
   margin: 0 auto;
   position: relative;
+  transform: translateX(0.35rem);
 }
 
 .search-box input {
@@ -305,14 +304,14 @@ onUnmounted(() => {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.8rem 1rem;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
   text-decoration: none;
   color: #333;
   border-radius: 10px;
   transition: all 0.3s;
-  font-weight: 500;
-  font-size: 0.95rem;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .nav-item:hover {
@@ -331,8 +330,8 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: #fff5fa;
   border-radius: 10px;
   color: #ff5ca8;
