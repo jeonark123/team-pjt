@@ -2,7 +2,7 @@
 
 :root {
   color-scheme: light;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   
   /* Local Mate - Hot Pink/Sunset Theme */
   --primary: #FF1493;
@@ -36,8 +36,11 @@ body {
   min-width: 320px;
   background: #f9f9f9;
   color: var(--text-dark);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 19.55px;
+  line-height: 1.8;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
@@ -55,6 +58,7 @@ button {
   font-family: inherit;
   cursor: pointer;
   border: none;
+  font-size: 1.15rem;
 }
 
 /* Global transitions */
