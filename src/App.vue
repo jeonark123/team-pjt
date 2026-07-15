@@ -13,8 +13,7 @@ const showSidebar = ref(false)
         <button class="sidebar-toggle" @click="showSidebar = !showSidebar">☰</button>
         
         <RouterLink to="/" class="logo">
-          <span class="logo-icon">🏃</span>
-          <span class="logo-text">Local Mate</span>
+          <img src="/logo.png" alt="Local Mate logo" class="logo-img" />
         </RouterLink>
 
         <div class="search-box">
@@ -117,8 +116,8 @@ const showSidebar = ref(false)
   max-width: 1800px;
   margin: 0 auto;
   padding: 0.75rem 1.5rem;
-  display: flex;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 1rem;
 }
@@ -142,10 +141,15 @@ const showSidebar = ref(false)
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   text-decoration: none;
   flex-shrink: 0;
   min-width: 120px;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  display: block;
 }
 
 .logo-icon {
@@ -162,8 +166,8 @@ const showSidebar = ref(false)
 }
 
 .search-box {
-  flex: 1;
-  max-width: 400px;
+  justify-self: center;
+  width: min(100%, 480px);
   position: relative;
 }
 
@@ -196,6 +200,7 @@ const showSidebar = ref(false)
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  justify-self: end;
 }
 
 .icon-btn {

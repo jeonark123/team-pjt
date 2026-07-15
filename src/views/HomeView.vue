@@ -26,17 +26,15 @@ const mapLocations = [
     <!-- Hero Banner -->
     <section class="hero">
       <div class="hero-content">
-        <h1>진짜 연결을 위한<br/>데이트 커뮤니티</h1>
-        <p>혼자가 아니야, 함께 뛰어요!<br/>날씨 맞춤형 조깅 & 관광 동행</p>
+        <h1>진짜 연결을 위한<br/>새로운 커뮤니티</h1>
+        <p>혼자가 아니야, 함께 해요!<br/>관광 동행 및 새로운 만남</p>
         <div class="cta-buttons">
           <RouterLink to="/create" class="btn btn-pink">지금 시작하기</RouterLink>
-          <RouterLink to="/community" class="btn btn-outline">이용 게시드</RouterLink>
+          <RouterLink to="/community" class="btn btn-outline">이용 가이드</RouterLink>
         </div>
       </div>
       <div class="hero-image">
-        <div class="character">😊</div>
-        <div class="phone">📱</div>
-        <div class="hearts">💖</div>
+        <img src="/hero-image.png" alt="Hero illustration" class="hero-image-img" />
       </div>
     </section>
 
@@ -126,19 +124,20 @@ const mapLocations = [
 .home-view {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
 }
 
 /* Hero Section */
 .hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
   align-items: center;
   background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
   border-radius: 16px;
-  padding: 1.5rem;
-  min-height: 240px;
+  min-height: 300px;
+}
+
+.hero-content {
+  margin-left: 2rem;
 }
 
 .hero-content h1 {
@@ -186,9 +185,9 @@ const mapLocations = [
 }
 
 .btn-outline {
-  background: transparent;
-  color: #333;
-  border: 2px solid #333;
+  background: white;
+  color: #FF69B4;
+  border: 2px solid #FF69B4;
 }
 
 .btn-outline:hover {
@@ -196,47 +195,17 @@ const mapLocations = [
 }
 
 .hero-image {
-  position: relative;
-  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 300px;
 }
 
-.character {
-  font-size: 3.5rem;
-  animation: bounce 2s infinite;
-}
-
-.phone {
-  font-size: 1.8rem;
-  position: absolute;
-  right: 20px;
-  top: 30px;
-  animation: float 3s infinite;
-}
-
-.hearts {
-  font-size: 1.5rem;
-  position: absolute;
-  left: 20px;
-  top: 80px;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(-5deg); }
-  50% { transform: translateY(-12px) rotate(5deg); }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.8; }
+.hero-image-img {
+  width: 100%;
+  max-width: 420px;
+  height: 400px;
+  object-fit: cover;
 }
 
 /* Main Grid */
