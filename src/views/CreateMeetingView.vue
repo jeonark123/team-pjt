@@ -30,14 +30,35 @@ const onPlaceInput = (q: string) => {
   const ql = q.toLowerCase()
   // show local matches only (no full list on empty input)
   suggestions.value = placesData.filter(p => p.name.toLowerCase().includes(ql)).slice(0, 8)
+  // if no local suggestions, try Kakao keyword search
+  if (suggestions.value.length === 0) {
+    const kakao = (window as any).kakao
+    if (kakao && kakao.maps && kakao.maps.services) {
+      const ps = new kakao.maps.services.Places()
+      ps.keywordSearch(q, (data: any, status: any) => {
+        if (status === kakao.maps.services.Status.OK) {
+          suggestions.value = data.slice(0, 8).map((d: any) => ({ name: d.place_name, lat: Number(d.y), lon: Number(d.x), source: 'kakao' }))
+        }
+      })
+    }
+  }
 }
 
 const pickSuggestion = (p: any) => {
-  selectedPlaceId.value = p.id
-  formData.value.location = p.name
-  selectedCoords.value = (p.lat && p.lng) ? { lat: p.lat, lon: p.lng } : null
-  placeQuery.value = p.name
-  suggestions.value = []
+  if (p.source === 'kakao') {
+    // remote suggestion: no local id
+    selectedPlaceId.value = null
+    selectedCoords.value = { lat: p.lat, lon: p.lon }
+    formData.value.location = p.name
+    placeQuery.value = p.name
+    suggestions.value = []
+  } else {
+    selectedPlaceId.value = p.id
+    formData.value.location = p.name
+    selectedCoords.value = (p.lat && p.lng) ? { lat: p.lat, lon: p.lng } : null
+    placeQuery.value = p.name
+    suggestions.value = []
+  }
 }
 
 const clearSelection = () => {
