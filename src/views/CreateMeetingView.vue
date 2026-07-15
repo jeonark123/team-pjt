@@ -86,13 +86,51 @@ const clearSelection = () => {
   selectedCoords.value = null
 }
 
-const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string) => {
+const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string, timeStr?: string) => {
   const key = import.meta.env.VITE_OPENWEATHER_KEY
   if (!key) {
     console.warn('VITE_OPENWEATHER_KEY missing')
     return { ok: true }
   }
   try {
+    // Try 5-day / 3-hour forecast first (more precise for specific times)
+    const targetDate = timeStr ? new Date(`${dateStr}T${timeStr}:00`) : new Date(`${dateStr}T00:00:00`)
+    const targetTs = Math.floor(targetDate.getTime() / 1000)
+
+    const fcRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=kr&appid=${key}`)
+    if (fcRes.ok) {
+      const fc = await fcRes.json()
+      const list = fc.list || []
+      if (list.length > 0) {
+        // find nearest forecast entry
+        let nearest: any = null
+        let bestDiff = Infinity
+        for (const it of list) {
+          const diff = Math.abs(it.dt - targetTs)
+          if (diff < bestDiff) {
+            bestDiff = diff
+            nearest = it
+          }
+        }
+        // if nearest entry is within 6 hours, use it
+        if (nearest && bestDiff <= 6 * 3600) {
+          const weatherMain = (nearest.weather && nearest.weather[0] && nearest.weather[0].main) || ''
+          const weatherDesc = (nearest.weather && nearest.weather[0] && nearest.weather[0].description) || ''
+          const pop = nearest.pop || 0
+          const rain = nearest.rain && (nearest.rain['3h'] || nearest.rain['1h']) ? (nearest.rain['3h'] || nearest.rain['1h']) : 0
+          const snow = nearest.snow && (nearest.snow['3h'] || nearest.snow['1h']) ? (nearest.snow['3h'] || nearest.snow['1h']) : 0
+          const wind = nearest.wind && nearest.wind.speed ? nearest.wind.speed : 0
+          const hasRain = weatherMain.toLowerCase().includes('rain') || rain > 0
+          const hasSnow = weatherMain.toLowerCase().includes('snow') || snow > 0
+          const isThunder = weatherMain.toLowerCase().includes('thunder')
+          const summary = `${weatherDesc}${nearest.main && nearest.main.temp ? ', ' + Math.round(nearest.main.temp) + '°C' : ''}`
+          const bad = isThunder || hasRain && (pop >= 0.5 || rain >= 5) || hasSnow || wind >= 15
+          return { ok: !bad, summary, hasRain, hasSnow, pop, wind }
+        }
+      }
+    }
+
+    // Fallback: use One Call daily forecast (for dates beyond 5 days or if forecast unavailable)
     const res = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${key}`)
     if (!res.ok) return { ok: true }
     const data = await res.json()
@@ -116,6 +154,33 @@ const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string) 
     return { ok: true }
   }
 }
+
+// --- Warning modal state & helper ---
+const showWarningModal = ref(false)
+const warningTitle = ref('')
+const warningBody = ref('')
+let warningResolver: ((proceed: boolean) => void) | null = null
+const showWarning = (title: string, body: string) => {
+  warningTitle.value = title
+  warningBody.value = body
+  showWarningModal.value = true
+  return new Promise<boolean>((resolve) => {
+    warningResolver = resolve
+  })
+}
+const onWarningConfirm = () => {
+  showWarningModal.value = false
+  if (warningResolver) warningResolver(true)
+  warningResolver = null
+}
+const onWarningCancel = () => {
+  showWarningModal.value = false
+  if (warningResolver) warningResolver(false)
+  warningResolver = null
+}
+const isDev = !!(import.meta.env.DEV)
+
+// (success modal removed - creation proceeds immediately on confirm)
 
 const geocodeOWM = async (query: string) => {
   const key = import.meta.env.VITE_OPENWEATHER_KEY
@@ -147,20 +212,24 @@ const handleSubmit = async () => {
   let weatherText = '확인되지 않음'
   if (selectedPlaceId.value !== null) {
     const p = placesData.find(x => x.id === selectedPlaceId.value)
-    if (p && p.lat && p.lng) {
-      const w = await checkWeatherForCoords(p.lat, p.lng, formData.value.date)
+      if (p && p.lat && p.lng) {
+      const w = await checkWeatherForCoords(p.lat, p.lng, formData.value.date, formData.value.time)
       if (w && w.ok === false) {
         const kind = w.hasRain ? '비' : w.hasSnow ? '눈' : '강수'
-        const proceed = window.confirm(`예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`)
+        const title = '예상 악천후가 감지되었습니다'
+        const body = `예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`
+        const proceed = await showWarning(title, body)
         if (!proceed) return
       }
       weatherText = w && w.summary ? w.summary : '확인되지 않음'
     }
   } else if (selectedCoords.value) {
-    const w = await checkWeatherForCoords(selectedCoords.value.lat, selectedCoords.value.lon, formData.value.date)
+    const w = await checkWeatherForCoords(selectedCoords.value.lat, selectedCoords.value.lon, formData.value.date, formData.value.time)
     if (w && w.ok === false) {
       const kind = w.hasRain ? '비' : w.hasSnow ? '눈' : '강수'
-      const proceed = window.confirm(`예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`)
+      const title = '예상 악천후가 감지되었습니다'
+      const body = `예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`
+      const proceed = await showWarning(title, body)
       if (!proceed) return
     }
     weatherText = w && w.summary ? w.summary : '확인되지 않음'
@@ -170,10 +239,12 @@ const handleSubmit = async () => {
     if (placeQuery.value && placeQuery.value.trim().length > 0) {
       const geo = await geocodeOWM(placeQuery.value.trim())
       if (geo) {
-        const w = await checkWeatherForCoords(geo.lat, geo.lon, formData.value.date)
+        const w = await checkWeatherForCoords(geo.lat, geo.lon, formData.value.date, formData.value.time)
         if (w && w.ok === false) {
           const kind = w.hasRain ? '비' : w.hasSnow ? '눈' : '강수'
-          const proceed = window.confirm(`예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`)
+          const title = '예상 악천후가 감지되었습니다'
+          const body = `예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`
+          const proceed = await showWarning(title, body)
           if (!proceed) return
         }
         weatherText = w && w.summary ? w.summary : '확인되지 않음'
@@ -181,6 +252,8 @@ const handleSubmit = async () => {
     }
   }
 
+  // At this point: weatherText is determined and any warning flow handled.
+  // Save meeting immediately (if user confirmed warning earlier, showWarning already resolved)
   meetingStore.addMeeting({
     title: formData.value.title,
     category: formData.value.category,
@@ -200,7 +273,6 @@ const handleSubmit = async () => {
     console.log('Stored meetings last:', stored[0])
   } catch (e) {}
 
-  alert('모임이 생성되었습니다!')
   router.push('/community')
 }
 </script>
@@ -212,6 +284,23 @@ const handleSubmit = async () => {
       <h1><FlaticonIcon name="sparkles" :size="24" /> 새 모임 만들기</h1>
       <p>함께할 사람들과의 특별한 순간을 시작하세요!</p>
     </section>
+
+      <!-- Warning Modal -->
+      <div v-if="showWarningModal" class="wm-backdrop">
+        <div class="wm-card">
+          <div class="wm-header">
+            <div class="wm-icon">⚠️</div>
+            <div class="wm-title">{{ warningTitle }}</div>
+          </div>
+          <div class="wm-body">{{ warningBody }}</div>
+          <div class="wm-actions">
+            <button class="wm-btn cancel" @click="onWarningCancel">취소</button>
+            <button class="wm-btn confirm" @click="onWarningConfirm">그래도 생성</button>
+          </div>
+        </div>
+
+        <!-- success modal removed -->
+      </div>
 
     <!-- Form -->
     <form @submit.prevent="handleSubmit" class="form-container">
@@ -325,6 +414,7 @@ const handleSubmit = async () => {
       <!-- Submit Button -->
       <div class="form-actions">
         <button type="submit" class="btn-submit"><FlaticonIcon name="sparkles" :size="16" /> 모임 만들기</button>
+        <button v-if="isDev" type="button" class="btn-preview" @click.prevent="showWarning('예상 악천후가 감지되었습니다','예상: 많은 비 — 이 날 비가 올 수 있습니다. 그래도 모임을 생성하시겠습니까?')" style="margin-left:12px;">경고 미리보기</button>
       </div>
     </form>
 
@@ -532,6 +622,8 @@ const handleSubmit = async () => {
   transform: translateY(-1px);
 }
 
+.btn-preview { padding:10px 14px; border-radius:10px; border:1px dashed #ffb6c1; background:#fff; color:#ff1493; font-weight:700 }
+
 /* Tips Section */
 .tips-section {
   background: linear-gradient(135deg, #FFE4EC 0%, #FFF5F8 100%);
@@ -672,4 +764,41 @@ const handleSubmit = async () => {
     font-size: 0.9rem;
   }
 }
+
+/* Warning modal styles */
+.wm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+.wm-card {
+  width: 420px;
+  max-width: calc(100% - 32px);
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+.wm-header {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding:18px 20px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.wm-icon { font-size: 26px }
+.wm-title { font-weight:800; color:#333; font-size:1.05rem }
+.wm-body { padding:18px 20px; color:#444; line-height:1.5; font-size:0.975rem }
+.wm-actions { display:flex; gap:12px; justify-content:flex-end; padding:12px 16px 20px; }
+.wm-btn { padding:10px 16px; border-radius:10px; font-weight:700; cursor:pointer; border:none }
+.wm-btn.cancel { background:#fff; color:#666; border:1px solid #eee }
+.wm-btn.confirm { background: linear-gradient(135deg,#FF1493 0%,#FF69B4 100%); color:#fff }
+.wm-btn.confirm:hover { transform: translateY(-2px) }
+
+/* Success modal styles */
+/* success modal removed */
 </style>
