@@ -1,69 +1,246 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
-import { ref, onMounted } from 'vue'
+import { RouterLink } from 'vue-router';
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
+import { useRecommendedPlaces } from '@/composables/useRecommendedPlaces';
 
-const mapContainer = ref<HTMLDivElement | null>(null)
-const kakaoMap = ref<any>(null)
-const markerInstances = ref<any[]>([])
+const { recommendedPlaces, lastQuery, clearRecommendedPlaces, openChat } = useRecommendedPlaces();
 
-const places = [
-  { id: 1, name: '한강공원', type: '러닝', rating: 4.8, icon: '🏞️', lat: 37.525, lng: 126.93 },
-  { id: 2, name: '남산타워', type: '관광', rating: 4.9, icon: '🗼', lat: 37.552, lng: 126.988 },
-  { id: 3, name: '선릉숲길', type: '산책', rating: 4.7, icon: '🌲', lat: 37.505, lng: 127.063 },
-  { id: 4, name: '강남역', type: '쇼핑', rating: 4.4, icon: '🛍️', lat: 37.497, lng: 127.028 },
-]
+const mapContainer = ref<HTMLDivElement | null>(null);
+const kakaoMap = ref<any>(null);
+const markerInstances = ref<any[]>([]);
+const isMapReady = ref(false);
+const isGeocoding = ref(false);
+const selectedPlaceId = ref<string | number | null>(null);
+const unresolvedPlaceIds = ref<Set<string | number>>(new Set());
+
+type Marker = { id: string | number };
+
+const defaultPlaces = [
+  {
+    id: 'local-1',
+    name: '한강공원',
+    type: '러닝',
+    rating: 4.8,
+    icon: '🏞️',
+    lat: 37.525,
+    lng: 126.93,
+  },
+  {
+    id: 'local-2',
+    name: '남산타워',
+    type: '관광',
+    rating: 4.9,
+    icon: '🗼',
+    lat: 37.552,
+    lng: 126.988,
+  },
+  {
+    id: 'local-3',
+    name: '선릉숲길',
+    type: '산책',
+    rating: 4.7,
+    icon: '🌲',
+    lat: 37.505,
+    lng: 127.063,
+  },
+  {
+    id: 'local-4',
+    name: '강남역',
+    type: '쇼핑',
+    rating: 4.4,
+    icon: '🛍️',
+    lat: 37.497,
+    lng: 127.028,
+  },
+];
 
 const meetings = [
-  { id: 1, title: '일요일 한강 조깅 함께해요!', location: '여의도 한강공원', date: '7월 21일 (일)', time: '07:00', category: '👩', participants: '5/10' },
-  { id: 2, title: '남산 산책 모임', location: '남산', date: '7월 22일 (월)', time: '18:00', category: '👩', participants: '3/8' },
-  { id: 3, title: '강남 쇼핑 & 카페투어', location: '강남역', date: '7월 20일 (토)', time: '14:00', category: '👩', participants: '7/12' },
-]
+  {
+    id: 1,
+    title: '일요일 한강 조깅 함께해요!',
+    location: '여의도 한강공원',
+    date: '7월 21일 (일)',
+    time: '07:00',
+    category: '👩',
+    participants: '5/10',
+  },
+  {
+    id: 2,
+    title: '남산 산책 모임',
+    location: '남산',
+    date: '7월 22일 (월)',
+    time: '18:00',
+    category: '👩',
+    participants: '3/8',
+  },
+  {
+    id: 3,
+    title: '강남 쇼핑 & 카페투어',
+    location: '강남역',
+    date: '7월 20일 (토)',
+    time: '14:00',
+    category: '👩',
+    participants: '7/12',
+  },
+];
 
-const mapLocations = [
-  { name: '한강공원', lat: 37.525, lng: 126.93, icon: '🏃' },
-  { name: '남산타워', lat: 37.552, lng: 126.988, icon: '🗼' },
-  { name: '강남역', lat: 37.497, lng: 127.028, icon: '🛍️' },
-]
+// 대화가 한 번이라도 있었는지 (질문 기록 기준)
+const hasChatted = computed(() => lastQuery.value.length > 0);
 
-const initializeMap = () => {
-  const kakao = (window as any).kakao
-  const container = mapContainer.value
+// 최대 4개만 노출
+const displayedPlaces = computed(() => recommendedPlaces.value.slice(0, 4));
 
-  if (!kakao || !container) {
-    return
+// 카드에 보여줄 목록: 대화했으면 AI 추천, 아니면 기본 큐레이션
+const activePlaces = computed(() => (hasChatted.value ? displayedPlaces.value : defaultPlaces));
+
+const clearMarkers = () => {
+  markerInstances.value.forEach((marker) => marker.setMap(null));
+  markerInstances.value = [];
+};
+
+const addMarker = (
+  kakao: any,
+  map: any,
+  lat: number,
+  lng: number,
+  label: string,
+  id: string | number,
+) => {
+  const markerPosition = new kakao.maps.LatLng(lat, lng);
+  const marker = new kakao.maps.Marker({ map, position: markerPosition });
+  (marker as any).__placeId = id;
+
+  const infowindow = new kakao.maps.InfoWindow({
+    content: `<div class="kakao-marker-content"><span class="marker-emoji">📍</span><span>${label}</span></div>`,
+  });
+  kakao.maps.event.addListener(marker, 'mouseover', () => infowindow.open(map, marker));
+  kakao.maps.event.addListener(marker, 'mouseout', () => infowindow.close());
+  kakao.maps.event.addListener(marker, 'click', () => {
+    selectedPlaceId.value = id;
+    map.setCenter(markerPosition);
+  });
+
+  markerInstances.value.push(marker);
+  return marker;
+};
+
+// 카드 목록(AI 추천 또는 기본 목록)을 지도에 렌더링. 좌표 없으면 주소 지오코딩.
+const renderMarkersForPlaces = (list: any[]) => {
+  const kakao = (window as any).kakao;
+  if (!kakao || !kakaoMap.value) return;
+
+  clearMarkers();
+  unresolvedPlaceIds.value = new Set();
+  if (!list.length) return;
+
+  const bounds = new kakao.maps.LatLngBounds();
+  let hasBounds = false;
+  const geocoder = kakao.maps.services ? new kakao.maps.services.Geocoder() : null;
+  const needsGeocode: any[] = [];
+
+  list.forEach((place) => {
+    if (typeof place.lat === 'number' && typeof place.lng === 'number') {
+      addMarker(kakao, kakaoMap.value, place.lat, place.lng, place.name, place.id);
+      bounds.extend(new kakao.maps.LatLng(place.lat, place.lng));
+      hasBounds = true;
+    } else if (place.address) {
+      needsGeocode.push(place);
+    } else {
+      unresolvedPlaceIds.value.add(place.id);
+    }
+  });
+
+  if (hasBounds) kakaoMap.value.setBounds(bounds);
+
+  if (needsGeocode.length) {
+    if (!geocoder) {
+      needsGeocode.forEach((place) => unresolvedPlaceIds.value.add(place.id));
+      return;
+    }
+
+    isGeocoding.value = true;
+    let remaining = needsGeocode.length;
+
+    needsGeocode.forEach((place) => {
+      geocoder.addressSearch(place.address, (result: any[], status: string) => {
+        remaining -= 1;
+        if (remaining <= 0) isGeocoding.value = false;
+
+        if (status !== kakao.maps.services.Status.OK || !result[0]) {
+          unresolvedPlaceIds.value.add(place.id);
+          return;
+        }
+
+        const lat = Number(result[0].y);
+        const lng = Number(result[0].x);
+        addMarker(kakao, kakaoMap.value, lat, lng, place.name, place.id);
+
+        const position = new kakao.maps.LatLng(lat, lng);
+        bounds.extend(position);
+        kakaoMap.value.setBounds(bounds);
+      });
+    });
+  }
+};
+
+const initializeMap = (retries = 10) => {
+  const kakao = (window as any).kakao;
+  const container = mapContainer.value;
+
+  if (!kakao || !kakao.maps || !container) {
+    // SDK가 아직 로드되기 전이면 잠깐 뒤 재시도 (초기 진입 시 흔한 타이밍 이슈 대응)
+    if (retries > 0) {
+      setTimeout(() => initializeMap(retries - 1), 300);
+    }
+    return;
   }
 
   const options = {
     center: new kakao.maps.LatLng(37.531, 126.986),
     level: 7,
-  }
+  };
 
-  const map = new kakao.maps.Map(container, options)
-  kakaoMap.value = map
-
-  mapLocations.forEach((loc) => {
-    const markerPosition = new kakao.maps.LatLng(loc.lat, loc.lng)
-    const marker = new kakao.maps.Marker({ map, position: markerPosition })
-    const infowindow = new kakao.maps.InfoWindow({ content: `<div class="kakao-marker-content"><span class="marker-emoji">${loc.icon}</span><span>${loc.name}</span></div>` })
-    kakao.maps.event.addListener(marker, 'mouseover', () => infowindow.open(map, marker))
-    kakao.maps.event.addListener(marker, 'mouseout', () => infowindow.close())
-    markerInstances.value.push(marker)
-  })
-}
+  const map = new kakao.maps.Map(container, options);
+  kakaoMap.value = map;
+  isMapReady.value = true;
+  renderMarkersForPlaces(activePlaces.value);
+};
 
 const focusPlace = (place: any) => {
-  const kakao = (window as any).kakao
-  if (!kakao || !kakaoMap.value || !place) return
-  if (place.lat && place.lng) {
-    const center = new kakao.maps.LatLng(place.lat, place.lng)
-    kakaoMap.value.setCenter(center)
-    kakaoMap.value.setLevel && kakaoMap.value.setLevel(5)
+  selectedPlaceId.value = place.id;
+
+  const kakao = (window as any).kakao;
+  if (!kakao || !kakaoMap.value) return;
+
+  if (typeof place.lat === 'number' && typeof place.lng === 'number') {
+    const center = new kakao.maps.LatLng(place.lat, place.lng);
+    kakaoMap.value.setCenter(center);
+    kakaoMap.value.setLevel && kakaoMap.value.setLevel(5);
+    return;
   }
-}
+
+  // 좌표가 아직 지오코딩 중이거나 실패한 경우, 해당 마커를 찾아 이동
+  const marker = markerInstances.value.find((m) => (m as any).__placeId === place.id);
+  if (marker) {
+    kakaoMap.value.setCenter(marker.getPosition());
+    kakaoMap.value.setLevel && kakaoMap.value.setLevel(5);
+  }
+};
+
+// 추천 결과가 바뀔 때마다 지도 갱신
+watch(activePlaces, async (list) => {
+  selectedPlaceId.value = null;
+  await nextTick();
+  if (isMapReady.value) renderMarkersForPlaces(list);
+});
 
 onMounted(() => {
-  initializeMap()
-})
+  initializeMap();
+});
+
+onUnmounted(() => {
+  clearMarkers();
+});
 </script>
 
 <template>
@@ -71,8 +248,8 @@ onMounted(() => {
     <!-- Hero Banner -->
     <section class="hero">
       <div class="hero-content">
-        <h1>진짜 연결을 위한<br/>새로운 커뮤니티</h1>
-        <p>혼자가 아니야, 함께 해요!<br/>관광 동행 및 새로운 만남</p>
+        <h1>진짜 연결을 위한<br />새로운 커뮤니티</h1>
+        <p>혼자가 아니야, 함께 해요!<br />관광 동행 및 새로운 만남</p>
         <div class="cta-buttons">
           <RouterLink to="/create" class="btn btn-pink">지금 시작하기</RouterLink>
           <RouterLink to="/community" class="btn btn-outline">이용 가이드</RouterLink>
@@ -89,24 +266,72 @@ onMounted(() => {
       <section class="places-section">
         <div class="section-title">
           <h2>✨ AI 추천 장소</h2>
-          <RouterLink to="/places" class="see-all">더보기 ></RouterLink>
+          <button v-if="hasChatted" class="see-all clear-btn" @click="clearRecommendedPlaces">
+            초기화
+          </button>
+          <RouterLink v-else to="/places" class="see-all">더보기 ></RouterLink>
         </div>
-        <div class="places-grid">
-          <div v-for="place in places" :key="place.id" class="place-card" @click="focusPlace(place)">
-            <div class="place-icon">{{ place.icon }}</div>
-            <h3>{{ place.name }}</h3>
-            <p class="place-type">{{ place.type }}</p>
-            <p class="place-rating">⭐ {{ place.rating }}</p>
+
+        <!-- 대화한 적 있음: 추천 결과 최대 4개 -->
+        <template v-if="hasChatted">
+          <p class="ai-query-note" aria-live="polite">"{{ lastQuery }}"에 대한 추천이에요</p>
+
+          <div v-if="displayedPlaces.length" class="places-grid">
+            <div
+              v-for="place in displayedPlaces"
+              :key="place.id"
+              class="place-card"
+              :class="{ 'is-selected': selectedPlaceId === place.id }"
+              tabindex="0"
+              role="button"
+              @click="focusPlace(place)"
+              @keydown.enter="focusPlace(place)"
+            >
+              <span v-if="unresolvedPlaceIds.has(place.id)" class="unresolved-badge"
+                >위치 확인 불가</span
+              >
+              <span v-else class="map-badge">📍 지도에서 보기</span>
+              <div class="place-icon">📍</div>
+              <h3>{{ place.name }}</h3>
+              <p class="place-type">{{ place.region }}</p>
+              <p class="place-rating">{{ place.description }}</p>
+            </div>
           </div>
+
+          <!-- 질문은 했지만 매칭된 장소가 없을 때 -->
+          <div v-else class="empty-state">
+            <p class="empty-icon">🔍</p>
+            <p class="empty-title">조건에 맞는 장소를 못 찾았어요</p>
+            <p class="empty-desc">지역이나 분위기를 다르게 말해보시면 더 잘 찾아드릴게요.</p>
+            <button class="empty-cta" @click="openChat">챗봇에게 다시 물어보기</button>
+          </div>
+        </template>
+
+        <!-- 대화한 적 없음: 대체 UI -->
+        <div v-else class="empty-state">
+          <p class="empty-icon">💬</p>
+          <p class="empty-title">아직 추천받은 장소가 없어요</p>
+          <p class="empty-desc">
+            우측 하단 챗봇에게 원하는 지역과 분위기를 알려주면<br />딱 맞는 장소를 골라드려요.
+          </p>
+          <button class="empty-cta" @click="openChat">챗봇에게 물어보기</button>
         </div>
       </section>
 
       <!-- Right: Map Section -->
       <section class="map-section">
-        <h2>📍 추천 장소 지도</h2>
+        <div class="map-section-header">
+          <h2>📍 추천 장소 지도</h2>
+          <span v-if="isGeocoding" class="geocoding-note">
+            <span class="spinner"></span> 위치 확인 중
+          </span>
+        </div>
         <div class="map-container">
-        <div ref="mapContainer" class="map"></div>
-      </div>
+          <div ref="mapContainer" class="map"></div>
+          <div v-if="!isMapReady" class="map-loading">
+            <span class="spinner"></span> 지도를 불러오는 중이에요
+          </div>
+        </div>
       </section>
     </div>
 
@@ -156,7 +381,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%);
   border-radius: 16px;
   min-height: 300px;
 }
@@ -200,7 +425,7 @@ onMounted(() => {
 }
 
 .btn-pink {
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
   color: white;
 }
 
@@ -211,8 +436,8 @@ onMounted(() => {
 
 .btn-outline {
   background: white;
-  color: #FF69B4;
-  border: 2px solid #FF69B4;
+  color: #ff69b4;
+  border: 2px solid #ff69b4;
 }
 
 .btn-outline:hover {
@@ -263,15 +488,25 @@ onMounted(() => {
 }
 
 .see-all {
-  color: #FF1493;
+  color: #ff1493;
   text-decoration: none;
   font-size: 0.85rem;
   font-weight: 600;
   transition: all 0.3s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .see-all:hover {
-  color: #FF69B4;
+  color: #ff69b4;
+}
+
+.ai-query-note {
+  font-size: 0.8rem;
+  color: #b23b73;
+  margin: -0.5rem 0 0.75rem;
 }
 
 .places-grid {
@@ -281,18 +516,64 @@ onMounted(() => {
 }
 
 .place-card {
-  background: linear-gradient(135deg, #FFE4EC 0%, #FFF5F8 100%);
+  position: relative;
+  background: linear-gradient(135deg, #ffe4ec 0%, #fff5f8 100%);
   padding: 1rem;
   border-radius: 10px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s;
-  border: 2px solid #FFB6C1;
+  transition: all 0.2s ease;
+  border: 2px solid #ffb6c1;
+  animation: card-in 0.2s ease-out;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .place-card:hover {
   transform: translateY(-3px);
-  border-color: #FF69B4;
+  border-color: #ff69b4;
+}
+
+.place-card:focus-visible {
+  outline: 3px solid #ff69b4;
+  outline-offset: 2px;
+}
+
+.place-card.is-selected {
+  border-color: #ff1493;
+  background: linear-gradient(135deg, #ffd6e6 0%, #fff0f5 100%);
+  box-shadow: 0 6px 16px rgba(255, 20, 147, 0.2);
+}
+
+.map-badge,
+.unresolved-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.map-badge {
+  background: rgba(255, 255, 255, 0.85);
+  color: #b23b73;
+}
+
+.unresolved-badge {
+  background: rgba(120, 120, 120, 0.12);
+  color: #777;
 }
 
 .place-icon {
@@ -315,9 +596,62 @@ onMounted(() => {
 
 .place-rating {
   font-size: 0.8rem;
-  color: #FF69B4;
+  color: #ff69b4;
   margin: 0;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  border: 2px dashed #ffd3e2;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff7fb 0%, #fffdfd 100%);
+}
+
+.empty-icon {
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem;
+}
+
+.empty-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.4rem;
+}
+
+.empty-desc {
+  font-size: 0.82rem;
+  color: #7a5d6d;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.empty-cta {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.3rem;
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.empty-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 20, 147, 0.3);
 }
 
 /* Map Section */
@@ -328,18 +662,35 @@ onMounted(() => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
-.map-section h2 {
+.map-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.map-section-header h2 {
   font-size: 1.1rem;
-  margin: 0 0 1rem;
+  margin: 0;
   color: #333;
   font-weight: 600;
 }
 
+.geocoding-note {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #b23b73;
+  font-weight: 600;
+}
+
 .map-container {
+  position: relative;
   width: 100%;
   height: 280px;
   background: white;
-  border: 2px solid #FFE4EC;
+  border: 2px solid #ffe4ec;
   border-radius: 10px;
   overflow: hidden;
 }
@@ -348,6 +699,35 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #fff7fb;
+  color: #b23b73;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #ffd3e2;
+  border-top-color: #ff1493;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Meetings Section */
@@ -365,16 +745,16 @@ onMounted(() => {
 }
 
 .meeting-card {
-  background: linear-gradient(135deg, #FFF5F8 0%, #FFE4EC 100%);
+  background: linear-gradient(135deg, #fff5f8 0%, #ffe4ec 100%);
   padding: 1rem;
   border-radius: 10px;
-  border: 2px solid #FFB6C1;
+  border: 2px solid #ffb6c1;
   transition: all 0.3s;
 }
 
 .meeting-card:hover {
   transform: translateY(-3px);
-  border-color: #FF69B4;
+  border-color: #ff69b4;
   box-shadow: 0 6px 16px rgba(255, 20, 147, 0.15);
 }
 
@@ -390,7 +770,7 @@ onMounted(() => {
 }
 
 .category-label {
-  background: #FFB6C1;
+  background: #ffb6c1;
   color: white;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
@@ -427,7 +807,7 @@ onMounted(() => {
 
 .participants {
   font-size: 0.85rem;
-  color: #FF1493;
+  color: #ff1493;
   font-weight: 600;
   margin-bottom: 0.8rem;
 }
@@ -435,7 +815,7 @@ onMounted(() => {
 .join-btn {
   width: 100%;
   padding: 0.6rem;
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -524,16 +904,20 @@ onMounted(() => {
     height: 150px;
   }
 
-  .character {
-    font-size: 2.5rem;
-  }
-
   .place-icon {
     font-size: 1.5rem;
   }
 
   .meetings-grid {
     gap: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .place-card,
+  .spinner {
+    animation: none !important;
+    transition: none !important;
   }
 }
 </style>
