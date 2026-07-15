@@ -26,6 +26,10 @@ const mapLocations = [
   { name: '강남역', lat: 37.497, lng: 127.028, icon: '🛍️' },
 ]
 
+const openChatbot = () => {
+  window.dispatchEvent(new CustomEvent('open-chatbot'))
+}
+
 const initializeMap = () => {
   const kakao = (window as any).kakao
   const container = mapContainer.value
@@ -72,11 +76,11 @@ onMounted(() => {
     <!-- Hero Banner -->
     <section class="hero">
       <div class="hero-content">
-        <h1>진짜 연결을 위한<br/>새로운 커뮤니티</h1>
-        <p>혼자가 아니야, 함께 해요!<br/>관광 동행 및 새로운 만남</p>
+        <h1>오늘의 우연이<br/>특별한 인연이 되도록</h1>
+        <p>AI가 당신의 취향을 연결합니다<br/>여행과 모임, 새로운 만남을 지금 시작해보세요</p>
         <div class="cta-buttons">
-          <RouterLink to="/create" class="btn btn-pink">지금 시작하기</RouterLink>
-          <RouterLink to="/community" class="btn btn-outline">이용 가이드</RouterLink>
+          <button type="button" class="btn btn-pink" @click="openChatbot">지금 물어보기</button>
+          <RouterLink to="/community" class="btn btn-outline">인연 찾기</RouterLink>
         </div>
       </div>
       <div class="hero-image">
@@ -157,7 +161,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+  background: linear-gradient(135deg, #ffd0d7 0%, #FFC0CB 100%);
   border-radius: 16px;
   min-height: 300px;
 }
@@ -167,20 +171,24 @@ onMounted(() => {
 }
 
 .hero-content h1 {
-  font-size: 3rem;
+  font-size: clamp(1.7rem, 3vw, 3rem);
   margin: 0 0 0.9rem;
+  padding-top: 1rem;
   color: #333;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.1;
   letter-spacing: -0.01em;
+  word-break: keep-all;
 }
 
 .hero-content p {
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 1.4vw, 1rem);
   color: #555;
   margin: 0 0 1rem;
   line-height: 1.5;
-  font-weight: 800;}
+  font-weight: 700;
+  word-break: keep-all;
+}
 
 .cta-buttons {
   display: flex;
@@ -202,7 +210,7 @@ onMounted(() => {
 }
 
 .btn-pink {
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff64b7 0%, #ec6fae 100%);
   color: white;
 }
 
@@ -213,8 +221,8 @@ onMounted(() => {
 
 .btn-outline {
   background: white;
-  color: #FF69B4;
-  border: 2px solid #FF69B4;
+  color: #ff64b7;
+  border: 2px solid #ec6fae;
 }
 
 .btn-outline:hover {
@@ -248,6 +256,8 @@ onMounted(() => {
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
 }
 
 .section-title {
@@ -280,6 +290,8 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
+  flex: 1;
+  align-content: start;
 }
 
 .place-card {
@@ -328,6 +340,8 @@ onMounted(() => {
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
 }
 
 .map-section h2 {
@@ -340,6 +354,7 @@ onMounted(() => {
 .map-container {
   width: 100%;
   height: 280px;
+  flex: 1;
   background: white;
   border: 2px solid #FFE4EC;
   border-radius: 10px;
@@ -482,11 +497,11 @@ onMounted(() => {
   }
 
   .hero-content h1 {
-    font-size: 1.5rem;
+    font-size: clamp(1.35rem, 3.5vw, 1.7rem);
   }
 
   .hero-content p {
-    font-size: 0.85rem;
+    font-size: clamp(0.85rem, 2.2vw, 0.95rem);
   }
 
   .cta-buttons {
@@ -519,7 +534,11 @@ onMounted(() => {
 
 @media (max-width: 480px) {
   .hero-content h1 {
-    font-size: 1.3rem;
+    font-size: clamp(1.2rem, 4vw, 1.4rem);
+  }
+
+  .hero-content p {
+    font-size: 0.85rem;
   }
 
   .hero-image {
