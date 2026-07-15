@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import OpenAI from 'openai';
+import { useRecommendedPlaces } from '@/composables/useRecommendedPlaces';
+
+const { setRecommendedPlaces, isChatOpen } = useRecommendedPlaces();
 
 type Place = {
   id: string;
@@ -10,6 +13,10 @@ type Place = {
   tags: string[];
   description: string;
   address: string;
+  lat?: number;
+  lng?: number;
+  rating?: number;
+  type?: string;
 };
 
 type ChatMessage = {
@@ -120,6 +127,18 @@ const toggleChat = () => {
   }
 };
 
+watch(isChatOpen, (open) => {
+  if (open) {
+    isOpen.value = true;
+    unreadCount.value = 0;
+    nextTick(() => {
+      scrollToBottom(false);
+      inputEl.value?.focus();
+    });
+    isChatOpen.value = false; // 한 번 열고 나면 리셋 (재사용 가능하게)
+  }
+});
+
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && isOpen.value) {
     isOpen.value = false;
@@ -203,16 +222,25 @@ const loadPlaces = async () => {
       group.slice(0, PER_REGION_LIMIT),
     );
 
-    const publicPlaces: Place[] = balancedItems.map(({ item, label }) => ({
-      id: `public-${item.contentid ?? item.CONTENTID ?? item.id ?? item.title ?? Math.random().toString(36).slice(2)}`,
-      name: item.title ?? item.name ?? item.facltNm ?? '이름 없음',
-      region: label,
-      category: '공공데이터',
-      tags: ['공공데이터', '추천지향'],
-      description:
-        item.addr1 ?? item.description ?? item.intro ?? '공공데이터 기반 추천 장소입니다.',
-      address: item.addr1 ?? item.addr ?? item.주소 ?? '주소 정보 없음',
-    }));
+    const publicPlaces: Place[] = balancedItems.map(({ item, label }) => {
+      const rawRating = item.overallRating ?? item.avgRating ?? item.rating;
+      const rawType = item.type ?? item.cat1 ?? item.lclsSystm2;
+
+      return {
+        id: `public-${item.contentid ?? item.CONTENTID ?? item.id ?? item.title ?? Math.random().toString(36).slice(2)}`,
+        name: item.title ?? item.name ?? item.facltNm ?? '이름 없음',
+        region: label,
+        category: '공공데이터',
+        tags: ['공공데이터', '추천지향'],
+        rating: rawRating !== undefined ? Number(rawRating) : undefined,
+        type: rawType !== undefined ? String(rawType) : undefined,
+        description:
+          item.addr1 ?? item.description ?? item.intro ?? '공공데이터 기반 추천 장소입니다.',
+        address: item.addr1 ?? item.addr ?? item.주소 ?? '주소 정보 없음',
+        lat: item.mapy ? Number(item.mapy) : undefined,
+        lng: item.mapx ? Number(item.mapx) : undefined,
+      };
+    });
 
     places.value = publicPlaces;
   } catch (e) {
@@ -247,6 +275,22 @@ ${JSON.stringify(recentContext, null, 2)}`,
     `사용자 질문: ${question}`,
     '반드시 JSON만 답하세요. 형식은 {"reply":"...","recommendedIds":["id1","id2"]} 입니다.',
   ].join('\n\n');
+};
+
+const findPlaceById = (id: unknown): Place | undefined => {
+  const s = String(id);
+  let p = placeMap.value.get(s);
+  if (p) return p;
+  p = placeMap.value.get(`public-${s}`);
+  if (p) return p;
+  const n = Number(s);
+  if (!Number.isNaN(n)) {
+    p = placeMap.value.get(String(n)) || placeMap.value.get(`public-${n}`);
+    if (p) return p;
+  }
+  p = places.value.find((pl) => String(pl.id).endsWith(s));
+  if (p) return p;
+  return undefined;
 };
 
 const handleSubmit = async () => {
@@ -301,8 +345,11 @@ const handleSubmit = async () => {
       : [];
 
     const recommendedPlaces = recommendedIds
-      .map((id) => placeMap.value.get(String(id)))
+      .map((id) => findPlaceById(id))
       .filter((place): place is Place => Boolean(place));
+
+    const unmatched = recommendedIds.filter((id) => !findPlaceById(id));
+    if (unmatched.length) console.warn('Unmatched recommendedIds:', unmatched);
 
     messages.value.push({
       id: Date.now() + 1,
@@ -311,6 +358,11 @@ const handleSubmit = async () => {
       places: recommendedPlaces,
       time: formatTime(),
     });
+
+    // HomeView가 볼 수 있도록 공유 상태에 반영
+    if (recommendedPlaces.length) {
+      setRecommendedPlaces(recommendedPlaces, question);
+    }
 
     if (!isOpen.value) unreadCount.value += 1;
   } catch (err) {

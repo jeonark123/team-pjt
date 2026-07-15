@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
-import PlaceChatBot from '@/components/PlaceChatBot.vue'
+import { ref } from 'vue';
+import { RouterLink, RouterView } from 'vue-router';
+import PlaceChatBot from '@/components/PlaceChatBot.vue';
+import FlaticonIcon from '@/components/FlaticonIcon.vue';
 
-const showSidebar = ref(false)
+const showSidebar = ref(false);
 </script>
 
 <template>
@@ -11,21 +12,22 @@ const showSidebar = ref(false)
     <!-- Header -->
     <header class="header">
       <div class="header-content">
-        <button class="sidebar-toggle" @click="showSidebar = !showSidebar">☰</button>
-        
+        <button class="sidebar-toggle" @click="showSidebar = !showSidebar">
+          <FlaticonIcon name="menu" :size="20" />
+        </button>
+
         <RouterLink to="/" class="logo">
           <img src="/logo.png" alt="Local Mate logo" class="logo-img" />
         </RouterLink>
 
-        <div class="search-box">
-          <input type="text" placeholder="관심 장소를 검색하세요" />
-          <span class="search-icon">🔍</span>
-        </div>
+        <div class="search-box" aria-hidden="true"></div>
 
         <div class="header-actions">
-          <button class="icon-btn" title="알림">🔔</button>
-          <button class="icon-btn" title="채팅">💬</button>
-          <button class="icon-btn profile-btn" title="프로필">👤</button>
+          <button class="icon-btn" title="알림"><FlaticonIcon name="bell" :size="18" /></button>
+          <button class="icon-btn" title="채팅"><FlaticonIcon name="chat" :size="18" /></button>
+          <button class="icon-btn profile-btn" title="프로필">
+            <FlaticonIcon name="user" :size="18" />
+          </button>
         </div>
       </div>
     </header>
@@ -35,24 +37,22 @@ const showSidebar = ref(false)
       <aside :class="['sidebar', { active: showSidebar }]">
         <nav class="nav">
           <RouterLink to="/" class="nav-item">
-            <span class="nav-icon">🏠</span>
+            <span class="nav-icon"><FlaticonIcon name="home" :size="18" /></span>
             <span class="nav-label">홈</span>
           </RouterLink>
           <RouterLink to="/places" class="nav-item">
-            <span class="nav-icon">🎯</span>
+            <span class="nav-icon"><FlaticonIcon name="map" :size="18" /></span>
             <span class="nav-label">장소추천</span>
           </RouterLink>
           <RouterLink to="/community" class="nav-item">
-            <span class="nav-icon">👥</span>
+            <span class="nav-icon"><FlaticonIcon name="group" :size="18" /></span>
             <span class="nav-label">동행게시판</span>
           </RouterLink>
           <RouterLink to="/create" class="nav-item nav-cta">
-            <span class="nav-icon">➕</span>
+            <span class="nav-icon"><FlaticonIcon name="plus" :size="18" /></span>
             <span class="nav-label">모임만들기</span>
           </RouterLink>
         </nav>
-
-      
       </aside>
 
       <!-- Main Content -->
@@ -63,13 +63,17 @@ const showSidebar = ref(false)
       <!-- Right Sidebar -->
       <aside class="right-sidebar">
         <div class="notice-section">
-          <h3>📢 공지사항</h3>
+          <h3><FlaticonIcon name="sparkles" :size="16" /> 공지사항</h3>
           <div class="notice-item">
-            <p class="notice-title">✨ AI 모임 추천<br/>시작!</p>
+            <p class="notice-title">
+              <FlaticonIcon name="sparkles" :size="14" /> AI 모임 추천<br />시작!
+            </p>
             <p class="notice-time">오늘</p>
           </div>
           <div class="notice-item">
-            <p class="notice-title">☀️ 날씨 기반<br/>활동 가이드</p>
+            <p class="notice-title">
+              <FlaticonIcon name="sun" :size="14" /> 날씨 기반<br />활동 가이드
+            </p>
             <p class="notice-time">어제</p>
           </div>
         </div>
@@ -90,11 +94,11 @@ const showSidebar = ref(false)
 
         <div class="ai-section">
           <div class="ai-header">
-            <span class="ai-icon">🤖</span>
+            <span class="ai-icon"><FlaticonIcon name="idea" :size="18" /></span>
             <h3>AI 어시스턴트</h3>
           </div>
-          <p class="ai-text">당신에게 딱 맞는<br/>모임을 찾아드려요!</p>
-          <button class="ai-btn">💬 대화 시작</button>
+          <p class="ai-text">당신에게 딱 맞는<br />모임을 찾아드려요!</p>
+          <button class="ai-btn"><FlaticonIcon name="chat" :size="16" /> 대화 시작</button>
         </div>
       </aside>
 
@@ -141,18 +145,18 @@ const showSidebar = ref(false)
 
 .sidebar-toggle {
   display: none;
-  background: none;
-  border: none;
+  background: #fff5fa;
+  border: 1px solid #ffe4ef;
   font-size: 1.5rem;
   cursor: pointer;
-  color: var(--text-dark);
+  color: #ff5ca8;
   padding: 0.5rem;
-  border-radius: 6px;
-  transition: all 0.3s;
+  border-radius: 10px;
 }
 
 .sidebar-toggle:hover {
-  background: var(--bg-light);
+  background: #ffeaf3;
+  transform: translateY(-1px);
 }
 
 .logo {
@@ -176,7 +180,7 @@ const showSidebar = ref(false)
 .logo-text {
   font-size: 1.3rem;
   font-weight: bold;
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -184,7 +188,7 @@ const showSidebar = ref(false)
 
 .search-box {
   justify-self: center;
-  width: min(100%, 480px);
+  width: min(100%, 560px);
   position: relative;
 }
 
@@ -200,7 +204,7 @@ const showSidebar = ref(false)
 
 .search-box input:focus {
   outline: none;
-  border-color: #FF1493;
+  border-color: #ff1493;
   background: white;
   box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.1);
 }
@@ -221,10 +225,10 @@ const showSidebar = ref(false)
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: #f5f5f5;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #f0e0ea;
+  background: #fff;
   border-radius: 50%;
   cursor: pointer;
   font-size: 1.1rem;
@@ -232,15 +236,17 @@ const showSidebar = ref(false)
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #ff5ca8;
+  box-shadow: 0 2px 6px rgba(255, 20, 147, 0.08);
 }
 
 .icon-btn:hover {
-  background: #e8e8e8;
+  background: #fff5fa;
   transform: scale(1.05);
 }
 
 .profile-btn {
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
   color: white;
 }
 
@@ -289,18 +295,34 @@ const showSidebar = ref(false)
 
 .nav-item:hover {
   background: rgba(255, 20, 147, 0.08);
-  color: #FF1493;
+  color: #ff1493;
+}
+
+.nav-item .nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #fff5fa;
+  border-radius: 10px;
+  color: #ff5ca8;
 }
 
 .nav-item.router-link-active {
   background: rgba(255, 20, 147, 0.15);
-  color: #FF1493;
-  border-left: 3px solid #FF1493;
+  color: #ff1493;
+  border-left: 3px solid #ff1493;
   padding-left: calc(1rem - 3px);
 }
 
+.nav-item.router-link-active .nav-icon {
+  background: #ff5ca8;
+  color: white;
+}
+
 .nav-cta {
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
   color: white;
   margin: 1rem 0.5rem 0;
   border-radius: 10px;
@@ -378,7 +400,7 @@ const showSidebar = ref(false)
 .ai-btn {
   width: 100%;
   padding: 0.9rem;
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -397,6 +419,9 @@ const showSidebar = ref(false)
   margin: 0 0 1rem;
   font-size: 0.95rem;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .notice-item {
@@ -406,7 +431,7 @@ const showSidebar = ref(false)
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s;
-  border-left: 3px solid #FFB6C1;
+  border-left: 3px solid #ffb6c1;
 }
 
 .notice-item:hover {
@@ -487,6 +512,9 @@ const showSidebar = ref(false)
   font-weight: 500;
   color: #333;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .notice-time {

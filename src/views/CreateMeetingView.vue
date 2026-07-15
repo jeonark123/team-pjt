@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { placesData } from '@/data/mockData'
 import { useRouter } from 'vue-router'
 import { useMeetingStore } from '@/stores/meeting'
+import FlaticonIcon from '@/components/FlaticonIcon.vue'
 
 const router = useRouter()
 const meetingStore = useMeetingStore()
@@ -208,7 +209,7 @@ const handleSubmit = async () => {
   <div class="create-meeting-view">
     <!-- Header -->
     <section class="header-section">
-      <h1>✨ 새 모임 만들기</h1>
+      <h1><FlaticonIcon name="sparkles" :size="24" /> 새 모임 만들기</h1>
       <p>함께할 사람들과의 특별한 순간을 시작하세요!</p>
     </section>
 
@@ -217,7 +218,7 @@ const handleSubmit = async () => {
       <!-- Basic Info Section -->
       <div class="form-section">
         <div class="section-header">
-          <span class="section-icon">📝</span>
+          <span class="section-icon"><FlaticonIcon name="write" :size="20" /></span>
           <h2>기본 정보</h2>
         </div>
 
@@ -254,7 +255,7 @@ const handleSubmit = async () => {
       <!-- Location & Date Section -->
       <div class="form-section">
         <div class="section-header">
-          <span class="section-icon">📍</span>
+          <span class="section-icon"><FlaticonIcon name="pin" :size="20" /></span>
           <h2>위치 & 일시</h2>
         </div>
 
@@ -297,7 +298,7 @@ const handleSubmit = async () => {
       <!-- Details Section -->
       <div class="form-section">
         <div class="section-header">
-          <span class="section-icon">👥</span>
+          <span class="section-icon"><FlaticonIcon name="group" :size="20" /></span>
           <h2>상세 정보</h2>
         </div>
 
@@ -323,13 +324,13 @@ const handleSubmit = async () => {
 
       <!-- Submit Button -->
       <div class="form-actions">
-        <button type="submit" class="btn-submit">✨ 모임 만들기</button>
+        <button type="submit" class="btn-submit"><FlaticonIcon name="sparkles" :size="16" /> 모임 만들기</button>
       </div>
     </form>
 
     <!-- Tips Section -->
     <section class="tips-section">
-      <h3>💡 모임 작성 팁</h3>
+      <h3><FlaticonIcon name="idea" :size="18" /> 모임 작성 팁</h3>
       <div class="tips-list">
         <div class="tip-item">
           <span class="tip-number">1</span>
