@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { placesData } from '@/data/mockData'
 import { useRouter } from 'vue-router'
 import { useMeetingStore } from '@/stores/meeting'
 
@@ -17,10 +18,55 @@ const formData = ref({
   difficulty: '초급' as '초급' | '중급' | '상급',
 })
 
-const handleSubmit = () => {
+const selectedPlaceId = ref<number | null>(null)
+const selectedCoords = ref<{ lat: number; lon: number } | null>(null)
+
+const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string) => {
+  const key = import.meta.env.VITE_OPENWEATHER_KEY
+  if (!key) return { ok: true }
+  try {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${key}`)
+    if (!res.ok) return { ok: true }
+    const data = await res.json()
+    const daily = data.daily || []
+    const target = new Date(dateStr + 'T00:00:00')
+    for (const d of daily) {
+      const dt = new Date(d.dt * 1000)
+      if (dt.getUTCFullYear() === target.getUTCFullYear() && dt.getUTCMonth() === target.getUTCMonth() && dt.getUTCDate() === target.getUTCDate()) {
+        const weatherMain = (d.weather && d.weather[0] && d.weather[0].main) || ''
+        const weatherDesc = (d.weather && d.weather[0] && d.weather[0].description) || ''
+        const hasRain = ('rain' in d) || weatherMain.toLowerCase().includes('rain')
+        const hasSnow = ('snow' in d) || weatherMain.toLowerCase().includes('snow')
+        const pop = d.pop || 0
+        const summary = `${weatherDesc}${d.temp ? ', ' + Math.round(d.temp.day) + '°C' : ''}`
+        return { ok: !(hasRain || hasSnow || pop >= 0.5), summary, hasRain, hasSnow, pop }
+      }
+    }
+    return { ok: true }
+  } catch (e) {
+    return { ok: true }
+  }
+}
+
+const handleSubmit = async () => {
   if (!formData.value.title || !formData.value.location || !formData.value.date) {
     alert('필수 항목을 입력해주세요')
     return
+  }
+
+  // If user selected a place from local JSON, use its coords to check weather
+  let weatherText = '확인되지 않음'
+  if (selectedPlaceId.value !== null) {
+    const p = placesData.find(x => x.id === selectedPlaceId.value)
+    if (p && p.lat && p.lng) {
+      const w = await checkWeatherForCoords(p.lat, p.lng, formData.value.date)
+      if (w && w.ok === false) {
+        const kind = w.hasRain ? '비' : w.hasSnow ? '눈' : '강수'
+        const proceed = window.confirm(`예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`)
+        if (!proceed) return
+      }
+      weatherText = w && w.summary ? w.summary : '확인되지 않음'
+    }
   }
 
   meetingStore.addMeeting({
@@ -31,7 +77,7 @@ const handleSubmit = () => {
     time: formData.value.time,
     maxParticipants: formData.value.maxParticipants,
     description: formData.value.description,
-    weather: '맑음, 22°C',
+    weather: weatherText,
     difficulty: formData.value.difficulty,
     image: '🎯',
   })
@@ -97,7 +143,19 @@ const handleSubmit = () => {
 
         <div class="form-group">
           <label>장소 *</label>
-          <input v-model="formData.location" type="text" placeholder="예: 여의도 한강공원" required />
+          <select v-model.number="selectedPlaceId" @change="() => { const p = placesData.find(x=>x.id===selectedPlaceId); if(p) { formData.location = p.name } }">
+            <option :value="null">직접 입력 또는 선택</option>
+            <option v-for="p in placesData" :key="p.id" :value="p.id">{{ p.name }}</option>
+          </select>
+          <div v-if="selectedPlaceId !== null" class="selected-place">
+            <div class="place-preview">
+              <div class="emoji">{{ placesData.find(x=>x.id===selectedPlaceId)?.image }}</div>
+              <div class="info">
+                <div class="name">{{ placesData.find(x=>x.id===selectedPlaceId)?.name }}</div>
+                <div class="desc">{{ placesData.find(x=>x.id===selectedPlaceId)?.description }}</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="form-row">
@@ -262,6 +320,12 @@ const handleSubmit = () => {
 .form-group textarea::placeholder {
   color: #999;
 }
+
+.selected-place { margin-top: 0.75rem; }
+.place-preview { display:flex; gap:0.75rem; align-items:center }
+.place-preview .emoji { font-size:1.8rem }
+.place-preview .name { font-weight:700 }
+.place-preview .desc { color:#666; font-size:0.9rem }
 
 .form-group input:focus,
 .form-group select:focus,
