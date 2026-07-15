@@ -112,6 +112,20 @@ const checkWeatherForCoords = async (lat: number, lon: number, dateStr: string) 
   }
 }
 
+const geocodeOWM = async (query: string) => {
+  const key = import.meta.env.VITE_OPENWEATHER_KEY
+  if (!key) return null
+  try {
+    const res = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=1&appid=${key}`)
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!Array.isArray(data) || data.length === 0) return null
+    return { lat: data[0].lat, lon: data[0].lon }
+  } catch (e) {
+    return null
+  }
+}
+
 const handleSubmit = async () => {
   // if no place selected from list, use free text input
   if (selectedPlaceId.value === null) {
@@ -123,7 +137,7 @@ const handleSubmit = async () => {
     return
   }
 
-  // If user selected a place from local JSON, use its coords to check weather
+  // If user selected a place from local JSON or selected remote suggestion (has coords), use its coords to check weather
   let weatherText = '확인되지 않음'
   if (selectedPlaceId.value !== null) {
     const p = placesData.find(x => x.id === selectedPlaceId.value)
@@ -135,6 +149,29 @@ const handleSubmit = async () => {
         if (!proceed) return
       }
       weatherText = w && w.summary ? w.summary : '확인되지 않음'
+    }
+  } else if (selectedCoords.value) {
+    const w = await checkWeatherForCoords(selectedCoords.value.lat, selectedCoords.value.lon, formData.value.date)
+    if (w && w.ok === false) {
+      const kind = w.hasRain ? '비' : w.hasSnow ? '눈' : '강수'
+      const proceed = window.confirm(`예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`)
+      if (!proceed) return
+    }
+    weatherText = w && w.summary ? w.summary : '확인되지 않음'
+  }
+  else {
+    // no selected place or coords -> try geocoding free text
+    if (placeQuery.value && placeQuery.value.trim().length > 0) {
+      const geo = await geocodeOWM(placeQuery.value.trim())
+      if (geo) {
+        const w = await checkWeatherForCoords(geo.lat, geo.lon, formData.value.date)
+        if (w && w.ok === false) {
+          const kind = w.hasRain ? '비' : w.hasSnow ? '눈' : '강수'
+          const proceed = window.confirm(`예상: ${w.summary || kind} — 이 날 ${kind}이 올 수 있습니다. 그래도 모임을 생성하시겠습니까?`)
+          if (!proceed) return
+        }
+        weatherText = w && w.summary ? w.summary : '확인되지 않음'
+      }
     }
   }
 
