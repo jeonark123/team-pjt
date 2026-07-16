@@ -422,24 +422,17 @@ onMounted(async () => {
   isCatalogLoading.value = true;
   aiCatalog.value = await loadPublicCatalog();
   isCatalogLoading.value = false;
+
   // 초기 추천: 인기(평점) 기반 상위 장소를 보여줍니다.
+  // ⚠️ PublicPlace 형태로 재매핑하지 않고 원본 placesData 그대로 사용 (필드 손실 방지 → 깜빡임/빈값 방지)
   try {
     const topByRating = placesData
       .slice()
       .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
       .slice(0, 6);
-    // map local place shape to PublicPlace shape expected by aiResults
-    aiResults.value = topByRating.map((p: any) => ({
-      id: String(p.id ?? p.contentid ?? p.title ?? Math.random().toString(36).slice(2)),
-      name: p.name ?? p.title ?? '장소',
-      region: p.region ?? '기타',
-      category: p.type ?? '기타',
-      tags: [p.type ?? ''],
-      description: p.description ?? p.intro ?? '',
-      address: p.addr1 ?? p.address ?? '',
-      lat: p.lat,
-      lng: p.lng,
-    }));
+
+    aiResults.value = topByRating; // 매핑 없이 그대로 할당
+
     renderMarkers();
   } catch (err) {
     console.warn('initial popularity recommendation failed', err);
@@ -453,6 +446,11 @@ watch(
   },
   { deep: true },
 );
+
+// Display AI results when available; otherwise fall back to mock `placesData` to avoid initial flicker
+const displayedPlaces = computed(() => {
+  return aiResults.value && aiResults.value.length > 0 ? aiResults.value : placesData;
+});
 </script>
 
 <template>
@@ -506,9 +504,9 @@ watch(
     </div>
 
     <section class="results-section">
-      <div v-if="aiResults.length > 0 || filteredPlaces.length > 0" class="places-grid">
+      <div v-if="displayedPlaces.length > 0" class="places-grid">
         <PlaceCard
-          v-for="place in aiResults.length > 0 ? aiResults : filteredPlaces"
+          v-for="place in displayedPlaces"
           :key="place.id"
           :place="place"
           @select="focusOnPlace"
