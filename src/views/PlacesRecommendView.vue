@@ -67,9 +67,9 @@ watch(
 const mapContainer = ref<HTMLDivElement | null>(null);
 const kakaoMap = ref<{ setCenter?: (c: any) => void; setLevel?: (n: number) => void } | null>(null);
 const markerInstances = ref<Array<{ setMap?: (m: any) => void }>>([]);
-const markerClusterer = ref<unknown>(null);
+const markerClusterer = ref<any>(null);
 const showCluster = ref<boolean>(true);
-const externalPlaces = ref<GenericPlace[]>([]);
+const externalPlaces = ref<any[]>([]);
 const showDatasets = ref({ travel: false, culture: false, leisure: false });
 const kakaoAvailable = ref<boolean | null>(null);
 const router = useRouter();
@@ -306,7 +306,7 @@ const renderMarkers = () => {
   placesData.forEach((p: any) => {
     if (p.lat && p.lng) sources.push({ name: p.name, lat: p.lat, lng: p.lng });
   });
-  externalPlaces.value.forEach((p) => {
+  externalPlaces.value.forEach((p: any) => {
     const s = toMarkersSource(p);
     if (s) sources.push(s);
   });
@@ -355,8 +355,8 @@ const focusOnPlace = (place: any) => {
   const s = toMarkersSource(place);
   if (!s) return;
   const center = new kakao.maps.LatLng(s.lat, s.lng);
-  kakaoMap.value.setCenter(center);
-  kakaoMap.value.setLevel?.(5);
+  kakaoMap.value?.setCenter?.(center);
+  kakaoMap.value?.setLevel?.(5);
 };
 
 const onCreateMeeting = async (place: any) => {

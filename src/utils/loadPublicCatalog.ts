@@ -41,8 +41,10 @@ const extractItems = (dataset: any): any[] => {
 
 export async function loadPublicCatalog(perRegionLimit = 40): Promise<PublicPlace[]> {
   try {
+    const responses = await Promise.all(regionFiles.map((file) => fetch(file.path)));
+
     const datasets = await Promise.all(
-      responses.map(async (response, idx) => {
+      responses.map(async (response: Response, idx: number) => {
         if (!response.ok) {
           console.warn('Failed to fetch', regionFiles[idx]?.path, response.status);
           return null;
@@ -67,7 +69,7 @@ export async function loadPublicCatalog(perRegionLimit = 40): Promise<PublicPlac
       .flat();
 
     const grouped = new Map<string, { item: any; label: string }[]>();
-    itemsWithLabel.forEach(({ item, label }) => {
+    itemsWithLabel.forEach(({ item, label }: { item: any; label: string }) => {
       if (!grouped.has(label)) grouped.set(label, []);
       grouped.get(label)!.push({ item, label });
     });
