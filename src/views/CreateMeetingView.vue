@@ -178,6 +178,27 @@ const onWarningCancel = () => {
   if (warningResolver) warningResolver(false)
   warningResolver = null
 }
+// --- Duplicate-check modal state & helper ---
+const showDuplicateModal = ref(false)
+const duplicateMatches = ref<any[]>([])
+let duplicateResolver: ((proceed: boolean) => void) | null = null
+const showDuplicate = (matches: any[]) => {
+  duplicateMatches.value = matches
+  showDuplicateModal.value = true
+  return new Promise<boolean>((resolve) => {
+    duplicateResolver = resolve
+  })
+}
+const onDuplicateConfirm = () => {
+  showDuplicateModal.value = false
+  if (duplicateResolver) duplicateResolver(true)
+  duplicateResolver = null
+}
+const onDuplicateCancel = () => {
+  showDuplicateModal.value = false
+  if (duplicateResolver) duplicateResolver(false)
+  duplicateResolver = null
+}
 const isDev = !!(import.meta.env.DEV)
 
 // (success modal removed - creation proceeds immediately on confirm)
@@ -206,6 +227,22 @@ const handleSubmit = async () => {
   if (!formData.value.title || !formData.value.location || !formData.value.date) {
     alert('필수 항목을 입력해주세요')
     return
+  }
+
+  // Check for similar existing meetings
+  const all = meetingStore.getAllMeetings()
+  const qTitle = formData.value.title.trim().toLowerCase()
+  const qLoc = formData.value.location.trim().toLowerCase()
+  const qDate = formData.value.date
+  const similar = all.filter(m => {
+    const t = (m.title || '').toLowerCase()
+    const l = (m.location || '').toLowerCase()
+    // similarity rules: exact title contains OR same location and same date
+    return (t && qTitle && (t.includes(qTitle) || qTitle.includes(t))) || (l === qLoc && m.date === qDate)
+  })
+  if (similar.length > 0) {
+    const proceed = await showDuplicate(similar)
+    if (!proceed) return
   }
 
   // If user selected a place from local JSON or selected remote suggestion (has coords), use its coords to check weather
@@ -301,6 +338,32 @@ const handleSubmit = async () => {
 
         <!-- success modal removed -->
       </div>
+
+        <!-- Duplicate check modal -->
+        <div v-if="showDuplicateModal" class="wm-backdrop">
+          <div class="wm-card">
+            <div class="wm-header">
+              <div class="wm-icon">🔎</div>
+              <div class="wm-title">비슷한 모임이 있습니다</div>
+            </div>
+            <div class="wm-body">
+              <p>이미 비슷한 모임이 존재합니다. 아래 모임을 확인해보시겠어요?</p>
+              <ul>
+                <li v-for="m in duplicateMatches" :key="m.id" style="margin:8px 0;">
+                  <strong>{{ m.title }}</strong>
+                  <div style="font-size:0.95rem;color:#666;margin-top:4px;">
+                    {{ m.location }} · {{ m.date }} {{ m.time }} —
+                    <a :href="`/community?highlight=${m.id}`" style="color:#FF1493; margin-left:6px;">모임 보기</a>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="wm-actions">
+              <button class="wm-btn cancel" @click="onDuplicateCancel">취소</button>
+              <button class="wm-btn confirm" @click="onDuplicateConfirm">그래도 생성</button>
+            </div>
+          </div>
+        </div>
 
     <!-- Form -->
     <form @submit.prevent="handleSubmit" class="form-container">
