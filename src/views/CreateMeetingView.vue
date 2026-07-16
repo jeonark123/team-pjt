@@ -864,21 +864,4 @@ const handleSubmit = async () => {
 
 /* Success modal styles */
 /* success modal removed */
-
-@media (max-width: 480px) {
-  .wm-card {
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .wm-body { padding: 16px; overflow:auto }
-  .wm-actions { padding: 12px 16px 28px }
-  .form-container { padding: 0 12px }
-  .form-section { padding: 1rem }
-  .btn-submit { width: 100% }
-}
 </style>

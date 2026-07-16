@@ -22,34 +22,6 @@
   --border-color: #E0E0E0;
 }
 
-/* Layout container utility */
-:root {
-  --container-max: 1200px;
-}
-
-.container {
-  max-width: var(--container-max);
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  width: 100%;
-}
-
-/* Responsive helpers */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.col {
-  flex: 1 1 0px;
-}
-
-@media (max-width: 768px) {
-  .container { padding-left: 0.75rem; padding-right: 0.75rem; }
-}
-
 * {
   box-sizing: border-box;
 }
