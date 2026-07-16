@@ -431,7 +431,18 @@ onMounted(async () => {
       .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
       .slice(0, 6);
 
-    aiResults.value = topByRating; // 매핑 없이 그대로 할당
+    // map local place shape to PublicPlace shape expected by aiResults
+    aiResults.value = topByRating.map((p: any) => ({
+      id: String(p.id ?? p.contentid ?? p.title ?? Math.random().toString(36).slice(2)),
+      name: p.name ?? p.title ?? '장소',
+      region: p.region ?? '기타',
+      category: p.type ?? '기타',
+      tags: p.tags ?? [p.type ?? ''],
+      description: p.description ?? p.intro ?? '',
+      address: p.addr1 ?? p.address ?? '',
+      lat: p.lat,
+      lng: p.lng,
+    }))
 
     renderMarkers();
   } catch (err) {
