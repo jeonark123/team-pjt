@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { RouterLink } from 'vue-router'
-import { useMeetingStore } from '@/stores/meeting'
-import MeetingCard from '@/components/MeetingCard.vue'
-import FlaticonIcon from '@/components/FlaticonIcon.vue'
+import { ref, computed } from 'vue';
+import { RouterLink } from 'vue-router';
+import { useMeetingStore } from '@/stores/meeting';
+import MeetingCard from '@/components/MeetingCard.vue';
+import FlaticonIcon from '@/components/FlaticonIcon.vue';
 
-const meetingStore = useMeetingStore()
-const activeTab = ref('female')
+const meetingStore = useMeetingStore();
+const activeTab = ref('female');
 const categories = [
   { id: 'female', name: '여자 모임', icon: 'group' },
   { id: 'male', name: '남자 모임', icon: 'group' },
   { id: 'mixed', name: '혼성 모임', icon: 'group' },
-]
+];
 const filteredMeetings = computed(() => {
-  return meetingStore.getMeetingsByCategory(activeTab.value as 'male' | 'female' | 'mixed')
-})
+  return meetingStore.getMeetingsByCategory(activeTab.value as 'male' | 'female' | 'mixed');
+});
 </script>
 
 <template>
@@ -107,6 +107,7 @@ const filteredMeetings = computed(() => {
 .tab-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.6rem;
   padding: 0.8rem 1.6rem;
   border: 2px solid #e0e0e0;
@@ -120,19 +121,21 @@ const filteredMeetings = computed(() => {
 }
 
 .tab-btn:hover {
-  border-color: #FF1493;
-  color: #FF1493;
+  border-color: #ff1493;
+  color: #ff1493;
   background: #f9f9f9;
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
   color: white;
-  border-color: #FF1493;
+  border-color: #ff1493;
 }
 
 .tab-icon {
   font-size: 1.2rem;
+  display: flex;
+  flex-shrink: 0;
 }
 
 .tab-label {
@@ -186,7 +189,7 @@ const filteredMeetings = computed(() => {
 }
 
 .cta-card {
-  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+  background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%);
   padding: 2.5rem;
   border-radius: 16px;
   text-align: center;
@@ -214,7 +217,7 @@ const filteredMeetings = computed(() => {
 .cta-btn {
   display: inline-block;
   padding: 0.9rem 2rem;
-  background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
   color: white;
   text-decoration: none;
   border-radius: 10px;
@@ -227,19 +230,26 @@ const filteredMeetings = computed(() => {
   box-shadow: 0 8px 20px rgba(255, 20, 147, 0.3);
 }
 
-/* Responsive */
+/* ================= Responsive ================= */
+
+/* 태블릿: 탭 3개 균등폭으로 한 줄 유지 (세로 스택 X) */
 @media (max-width: 1024px) {
   .tabs {
-    flex-direction: column;
+    flex-wrap: nowrap;
   }
 
   .tab-btn {
-    width: 100%;
-    justify-content: center;
+    flex: 1;
+    padding: 0.8rem 1rem;
   }
 }
 
+/* 모바일 */
 @media (max-width: 768px) {
+  .community-view {
+    gap: 1.5rem;
+  }
+
   .header-section h1 {
     font-size: 1.5rem;
   }
@@ -248,14 +258,18 @@ const filteredMeetings = computed(() => {
     padding: 1rem;
   }
 
-  .tab-btn {
-    padding: 0.7rem 1.2rem;
-    font-size: 0.9rem;
-    gap: 0.4rem;
+  .tabs {
+    gap: 0.6rem;
   }
 
-  .tab-label {
-    display: none;
+  .tab-btn {
+    padding: 0.7rem 0.6rem;
+    font-size: 0.85rem;
+    gap: 0.35rem;
+  }
+
+  .meetings-list {
+    gap: 1rem;
   }
 
   .cta-card {
@@ -272,6 +286,8 @@ const filteredMeetings = computed(() => {
   }
 }
 
+/* 작은 모바일: 라벨 대신 아이콘만 (가로 공간이 진짜 부족할 때만) */
+/* 작은 모바일: 아이콘 없애고 텍스트 위주로 압축 */
 @media (max-width: 480px) {
   .header-section h1 {
     font-size: 1.3rem;
@@ -281,18 +297,27 @@ const filteredMeetings = computed(() => {
     font-size: 0.9rem;
   }
 
+  .tabs-section {
+    padding: 0.8rem;
+  }
+
   .tabs {
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .tab-btn {
-    padding: 0.6rem 0.8rem;
-    font-size: 0.8rem;
+    padding: 0.6rem 0.4rem;
     border-radius: 8px;
+    gap: 0.3rem;
+    font-size: 0.78rem; /* 텍스트는 유지, 크기만 축소 */
   }
 
   .tab-icon {
-    font-size: 1rem;
+    display: none; /* 라벨이 아니라 아이콘을 숨김 */
+  }
+
+  .empty-state {
+    padding: 1.5rem;
   }
 
   .cta-icon {
@@ -304,6 +329,11 @@ const filteredMeetings = computed(() => {
   }
 
   .cta-card p {
+    font-size: 0.9rem;
+  }
+
+  .cta-btn {
+    padding: 0.75rem 1.4rem;
     font-size: 0.9rem;
   }
 }

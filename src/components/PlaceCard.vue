@@ -1,22 +1,22 @@
 <script setup lang="ts">
 interface Place {
-  id: number
-  name: string
-  type: string
-  distance: string
-  difficulty: string
-  image: string
-  description: string
-  rating: number
-  reviews: number
+  id: number;
+  name: string;
+  type: string;
+  distance: string;
+  difficulty: string;
+  image: string;
+  description: string;
+  rating: number;
+  reviews: number;
 }
 
 defineProps<{
-  place: Place
-}>()
+  place: Place;
+}>();
 const emit = defineEmits<{
-  (e: 'select', place: Place): void
-}>()
+  (e: 'select', place: Place): void;
+}>();
 </script>
 
 <template>
@@ -77,6 +77,10 @@ const emit = defineEmits<{
 
 .place-content {
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .place-content h3 {
@@ -90,12 +94,17 @@ const emit = defineEmits<{
   font-size: 0.85rem;
   color: var(--text-light);
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .tags {
   display: flex;
   gap: 0.5rem;
   margin: 0.8rem 0;
+  flex-wrap: wrap;
 }
 
 .tag {
@@ -104,6 +113,7 @@ const emit = defineEmits<{
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .tag.type {
@@ -138,6 +148,7 @@ const emit = defineEmits<{
 
 .stat {
   text-align: center;
+  min-width: 0;
 }
 
 .stat .label {
@@ -152,6 +163,9 @@ const emit = defineEmits<{
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn-primary {
@@ -164,7 +178,7 @@ const emit = defineEmits<{
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  margin-top: 0.5rem;
+  margin-top: auto; /* 콘텐츠 길이와 상관없이 버튼을 항상 카드 하단에 고정 */
 }
 
 .btn-primary:hover {
@@ -172,19 +186,85 @@ const emit = defineEmits<{
   box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
 }
 
-@media (max-width: 768px) {
+/* 태블릿: 세로형 유지, 여백만 살짝 축소 */
+@media (max-width: 1024px) {
+  .place-content {
+    padding: 1.2rem;
+  }
+}
+
+/* 모바일: 가로형 카드로 전환 */
+@media (max-width: 640px) {
   .place-card {
     flex-direction: row;
   }
 
   .place-image {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: auto; /* 부모(.place-card)의 stretch로 .place-content 높이에 맞춰짐 */
     flex-shrink: 0;
+    font-size: 2.2rem;
   }
 
   .place-content {
-    padding: 1rem;
+    padding: 0.9rem;
+  }
+
+  .place-content h3 {
+    font-size: 1rem;
+    margin: 0 0 0.3rem;
+  }
+
+  .description {
+    -webkit-line-clamp: 1;
+    font-size: 0.8rem;
+    margin: 0.3rem 0;
+  }
+
+  .tags {
+    margin: 0.5rem 0;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .stats {
+    gap: 0.4rem;
+    margin: 0.6rem 0;
+    padding-top: 0.6rem;
+  }
+
+  .stat .label {
+    font-size: 0.65rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .stat .value {
+    font-size: 0.8rem;
+  }
+
+  .btn-primary {
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* 아주 작은 폰: 리뷰 항목 숨기고 2열로 */
+@media (max-width: 380px) {
+  .place-image {
+    width: 90px;
+    font-size: 1.8rem;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat:last-child {
+    display: none;
   }
 }
 </style>

@@ -1,74 +1,74 @@
 <script setup lang="ts">
-import { useMeetingStore } from '@/stores/meeting'
-import FlaticonIcon from '@/components/FlaticonIcon.vue'
+import { useMeetingStore } from '@/stores/meeting';
+import FlaticonIcon from '@/components/FlaticonIcon.vue';
 
 interface Meeting {
-  id: number
-  title: string
-  category: 'male' | 'female' | 'mixed'
-  location: string
-  date: string
-  time: string
-  participants: number
-  maxParticipants: number
-  description: string
-  weather: string
-  difficulty: string
-  image: string
-  createdAt: string
+  id: number;
+  title: string;
+  category: 'male' | 'female' | 'mixed';
+  location: string;
+  date: string;
+  time: string;
+  participants: number;
+  maxParticipants: number;
+  description: string;
+  weather: string;
+  difficulty: string;
+  image: string;
+  createdAt: string;
 }
 
 const props = defineProps<{
-  meeting: Meeting
-}>()
+  meeting: Meeting;
+}>();
 
-const meetingStore = useMeetingStore()
+const meetingStore = useMeetingStore();
 
-import { ref } from 'vue'
+import { ref } from 'vue';
 
-const toast = ref(false)
-const toastMessage = ref('')
+const toast = ref(false);
+const toastMessage = ref('');
 
 const handleJoin = () => {
-  const success = meetingStore.joinMeeting(props.meeting.id)
+  const success = meetingStore.joinMeeting(props.meeting.id);
   if (success) {
-    toastMessage.value = '모임에 참가했습니다!'
-    toast.value = true
-    setTimeout(() => (toast.value = false), 1500)
+    toastMessage.value = '모임에 참가했습니다!';
+    toast.value = true;
+    setTimeout(() => (toast.value = false), 1500);
   } else {
-    toastMessage.value = '더 이상 참가할 수 없습니다.'
-    toast.value = true
-    setTimeout(() => (toast.value = false), 1800)
+    toastMessage.value = '더 이상 참가할 수 없습니다.';
+    toast.value = true;
+    setTimeout(() => (toast.value = false), 1800);
   }
-}
+};
 
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  const days = ['일', '월', '화', '수', '목', '금', '토']
-  return `${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`
-}
+  const date = new Date(dateString);
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
+};
 
 const getGenderLabel = (category: string) => {
   switch (category) {
     case 'male':
-      return '남자 모임'
+      return '남자 모임';
     case 'female':
-      return '여자 모임'
+      return '여자 모임';
     case 'mixed':
-      return '혼성 모임'
+      return '혼성 모임';
   }
-}
+};
 
 const getCategoryColor = (category: string) => {
   switch (category) {
     case 'male':
-      return '#4A90E2'
+      return '#4A90E2';
     case 'female':
-      return '#FF69B4'
+      return '#FF69B4';
     case 'mixed':
-      return '#9B59B6'
+      return '#9B59B6';
   }
-}
+};
 </script>
 
 <template>
@@ -105,10 +105,15 @@ const getCategoryColor = (category: string) => {
 
       <div class="participants-info">
         <span class="participants">
-          <FlaticonIcon name="group" :size="14" /> {{ meeting.participants }}/{{ meeting.maxParticipants }}명
+          <FlaticonIcon name="group" :size="14" /> {{ meeting.participants }}/{{
+            meeting.maxParticipants
+          }}명
         </span>
         <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: (meeting.participants / meeting.maxParticipants) * 100 + '%' }"></div>
+          <div
+            class="progress-fill"
+            :style="{ width: (meeting.participants / meeting.maxParticipants) * 100 + '%' }"
+          ></div>
         </div>
       </div>
 
@@ -145,6 +150,7 @@ const getCategoryColor = (category: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.6rem;
   padding: 1rem;
   background: linear-gradient(135deg, var(--bg-light) 0%, rgba(255, 182, 193, 0.3) 100%);
 }
@@ -152,6 +158,8 @@ const getCategoryColor = (category: string) => {
 .header-info {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .gender-badge,
@@ -162,6 +170,7 @@ const getCategoryColor = (category: string) => {
   font-size: 0.75rem;
   font-weight: 600;
   color: white;
+  white-space: nowrap;
 }
 
 .difficulty-badge {
@@ -177,6 +186,7 @@ const getCategoryColor = (category: string) => {
   border-radius: 10px;
   background: rgba(255, 20, 147, 0.1);
   color: #ff5ca8;
+  flex-shrink: 0;
 }
 
 .card-content {
@@ -188,6 +198,7 @@ const getCategoryColor = (category: string) => {
   font-size: 1.1rem;
   color: var(--text-dark);
   line-height: 1.3;
+  overflow-wrap: break-word;
 }
 
 .info-row {
@@ -199,6 +210,11 @@ const getCategoryColor = (category: string) => {
   color: var(--text-light);
 }
 
+.info-row span:last-child {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
 .icon {
   display: inline-flex;
   align-items: center;
@@ -208,6 +224,7 @@ const getCategoryColor = (category: string) => {
   border-radius: 8px;
   background: #fff5fa;
   color: #ff5ca8;
+  flex-shrink: 0;
 }
 
 .description {
@@ -281,19 +298,117 @@ const getCategoryColor = (category: string) => {
   background: white;
   border-radius: 12px;
   padding: 12px 18px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
   color: #333;
-  font-weight:700;
+  font-weight: 700;
   z-index: 99999;
+  max-width: calc(100vw - 32px);
+  text-align: center;
 }
 
+/* ================= Responsive ================= */
+
 @media (max-width: 768px) {
+  .card-header {
+    padding: 0.9rem;
+  }
+
+  .gender-badge,
+  .difficulty-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .emoji {
+    width: 34px;
+    height: 34px;
+  }
+
   .card-content {
     padding: 1rem;
   }
 
   .card-content h3 {
     font-size: 1rem;
+    margin: 0 0 0.8rem;
+  }
+
+  .info-row {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    font-size: 0.85rem;
+    margin: 0.8rem 0;
+  }
+
+  .participants-info {
+    padding: 0.7rem;
+  }
+
+  .btn-join {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-header {
+    flex-wrap: wrap;
+    padding: 0.8rem;
+  }
+
+  .header-info {
+    gap: 0.4rem;
+  }
+
+  .gender-badge,
+  .difficulty-badge {
+    padding: 0.28rem 0.55rem;
+    font-size: 0.65rem;
+  }
+
+  .emoji {
+    width: 30px;
+    height: 30px;
+  }
+
+  .card-content {
+    padding: 0.8rem;
+  }
+
+  .card-content h3 {
+    font-size: 0.95rem;
+  }
+
+  .info-row {
+    font-size: 0.8rem;
+    gap: 0.5rem;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .description {
+    font-size: 0.8rem;
+  }
+
+  .participants {
+    font-size: 0.8rem;
+  }
+
+  .btn-join {
+    padding: 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  .mc-toast {
+    bottom: 80px; /* 하단 탭바 있는 레이아웃 고려 */
+    padding: 10px 16px;
+    font-size: 0.9rem;
   }
 }
 </style>

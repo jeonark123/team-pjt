@@ -338,7 +338,7 @@ watch(
         <label><input type="checkbox" v-model="showDatasets.travel" /> 여행코스</label>
         <label><input type="checkbox" v-model="showDatasets.culture" /> 문화시설</label>
         <label><input type="checkbox" v-model="showDatasets.leisure" /> 레포츠</label>
-        <label style="margin-left: 12px"
+        <label class="cluster-label"
           ><input type="checkbox" v-model="showCluster" /> 클러스터링 사용</label
         >
       </div>
@@ -474,6 +474,7 @@ watch(
   font-size: 1rem;
   transition: all 0.3s;
   background: white;
+  box-sizing: border-box;
 }
 
 .search-box input:focus {
@@ -511,6 +512,7 @@ watch(
   transition: all 0.3s;
   color: #666;
   font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .filter-btn:hover {
@@ -565,16 +567,19 @@ watch(
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
 }
 .map-controls label {
   font-size: 0.9rem;
   color: #444;
+  white-space: nowrap;
 }
 .map-controls input[type='checkbox'] {
   margin-right: 6px;
 }
 
-.map-controls label[style] {
+.map-controls .cluster-label {
   margin-left: 12px;
 }
 
@@ -661,6 +666,7 @@ watch(
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .reshuffle-btn:hover:not(:disabled) {
@@ -681,6 +687,7 @@ watch(
   font-size: 0.82rem;
   color: #b23b73;
   margin: 0 0 1rem;
+  text-align: center;
 }
 
 .tips-grid {
@@ -807,11 +814,14 @@ watch(
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.25rem;
+  flex-wrap: wrap;
 }
 
 .tip-result-top strong {
   font-size: 0.88rem;
   color: #333;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .tip-result-region {
@@ -822,6 +832,7 @@ watch(
   padding: 2px 6px;
   border-radius: 999px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tip-result-desc {
@@ -831,18 +842,29 @@ watch(
   line-height: 1.4;
 }
 
-/* Responsive */
+/* ================= Responsive ================= */
+
+/* 태블릿 */
 @media (max-width: 1024px) {
   .places-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
 
   .tips-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .map-container {
+    height: 240px;
   }
 }
 
+/* 모바일 */
 @media (max-width: 768px) {
+  .places-view {
+    gap: 2rem;
+  }
+
   .header-section h1 {
     font-size: 1.5rem;
   }
@@ -864,14 +886,36 @@ watch(
     font-size: 0.9rem;
   }
 
+  .map-section {
+    padding: 1.2rem;
+  }
+
+  .map-controls {
+    gap: 0.5rem 0.9rem;
+  }
+
+  .map-controls .cluster-label {
+    margin-left: 0;
+  }
+
+  .map-container {
+    height: 200px;
+  }
+
   .tips-section {
     padding: 1.5rem;
   }
+
+  .tips-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
+/* 작은 모바일 */
 @media (max-width: 480px) {
   .header-section h1 {
     font-size: 1.3rem;
+    flex-wrap: wrap;
   }
 
   .header-section p {
@@ -888,6 +932,31 @@ watch(
     font-size: 0.85rem;
   }
 
+  .map-section {
+    padding: 1rem;
+  }
+
+  .map-controls {
+    font-size: 0.85rem;
+    gap: 0.4rem 0.7rem;
+  }
+
+  .map-controls label {
+    font-size: 0.82rem;
+  }
+
+  .map-container {
+    height: 180px;
+  }
+
+  .tips-section {
+    padding: 1.2rem;
+  }
+
+  .tip-card {
+    padding: 1.1rem;
+  }
+
   .tip-icon {
     font-size: 2rem;
   }
@@ -899,6 +968,12 @@ watch(
 
   .reshuffle-btn {
     position: static;
+  }
+
+  .tip-result-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
   }
 }
 </style>

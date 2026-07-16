@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
-import { useMeetingStore } from '@/stores/meeting'
-import MeetingCard from '@/components/MeetingCard.vue'
+import { useMeetingStore } from '@/stores/meeting';
+import MeetingCard from '@/components/MeetingCard.vue';
 import FlaticonIcon from '@/components/FlaticonIcon.vue';
 import { useRecommendedPlaces } from '@/composables/useRecommendedPlaces';
 
@@ -57,9 +57,9 @@ const defaultPlaces = [
   },
 ];
 
-const meetingStore = useMeetingStore()
+const meetingStore = useMeetingStore();
 // show top 3 latest meetings on home
-const meetings = computed(() => meetingStore.meetings.slice(0, 3))
+const meetings = computed(() => meetingStore.meetings.slice(0, 3));
 
 // 대화가 한 번이라도 있었는지 (질문 기록 기준)
 const hasChatted = computed(() => lastQuery.value.length > 0);
@@ -345,6 +345,7 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%);
   border-radius: 16px;
   min-height: 300px;
+  overflow: hidden; /* 자식 이미지가 둥근 모서리 밖으로 삐져나가지 않도록 */
 }
 
 .hero-content {
@@ -432,6 +433,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 300px;
+  overflow: hidden;
 }
 
 .hero-image-img {
@@ -439,6 +441,8 @@ onUnmounted(() => {
   max-width: 420px;
   height: 400px;
   object-fit: cover;
+  object-position: center top;
+  display: block;
 }
 
 /* Main Grid */
@@ -825,6 +829,10 @@ onUnmounted(() => {
     min-height: auto;
   }
 
+  .hero-image-img {
+    height: 280px;
+  }
+
   .main-grid {
     grid-template-columns: 1fr;
   }
@@ -846,6 +854,14 @@ onUnmounted(() => {
   .hero {
     padding: 1.25rem;
     margin-top: 2rem;
+  }
+
+  .hero-content {
+    margin-left: 0;
+  }
+
+  .hero-image-img {
+    height: 220px;
   }
 
   .main-grid {
@@ -893,8 +909,8 @@ onUnmounted(() => {
     font-size: 1.3rem;
   }
 
-  .hero-image {
-    height: 150px;
+  .hero-image-img {
+    height: 160px;
   }
 
   .place-icon {
