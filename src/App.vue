@@ -70,40 +70,6 @@ onUnmounted(() => {
         <RouterView />
       </main>
 
-      <!-- Right Sidebar -->
-      <aside class="right-sidebar">
-        <div class="notice-section">
-          <h3><FlaticonIcon name="sparkles" :size="16" /> NEW</h3>
-          <div class="notice-item">
-            <p class="notice-title">
-              <FlaticonIcon name="sparkles" :size="14" /> AI 모임 추천<br />시작!
-            </p>
-            <p class="notice-time">오늘</p>
-          </div>
-          <div class="notice-item">
-            <p class="notice-title">
-              <FlaticonIcon name="sun" :size="14" /> 날씨 기반<br />활동 가이드
-            </p>
-            <p class="notice-time">어제</p>
-          </div>
-        </div>
-
-        <div class="weather-section">
-          <div class="weather-header">
-            <h3>날씨 정보 제안</h3>
-            <span class="weather-tag">오늘</span>
-          </div>
-          <p class="weather-summary">현재 서울은 맑음, 야외 활동하기 좋은 날씨입니다.</p>
-          <ul class="weather-list">
-            <li>기온: 24°C</li>
-            <li>체감: 26°C</li>
-            <li>강수 확률: 10%</li>
-          </ul>
-          <button class="weather-btn">추천 활동 보기</button>
-        </div>
-
-      </aside>
-
       <PlaceChatBot :is-open="isChatbotOpen" @update:is-open="isChatbotOpen = $event" />
     </div>
 
@@ -274,7 +240,7 @@ onUnmounted(() => {
 /* Layout */
 .layout {
   display: grid;
-  grid-template-columns: 200px 1fr 280px;
+  grid-template-columns: 200px 1fr;
   gap: 1.5rem;
   flex: 1;
   max-width: 1800px;
@@ -405,151 +371,6 @@ onUnmounted(() => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Right Sidebar */
-.right-sidebar {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  height: fit-content;
-  position: sticky;
-  top: 80px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-
-.ai-section {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  border: 1px solid #f0e0ff;
-}
-
-.ai-btn {
-  width: 100%;
-  padding: 0.9rem;
-  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 0.95rem;
-}
-
-.ai-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
-}
-
-.notice-section h3 {
-  margin: 0 0 1rem;
-  font-size: 0.95rem;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.notice-item {
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  background: #f9f9f9;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s;
-  border-left: 3px solid #ffb6c1;
-}
-
-.notice-item:hover {
-  background: rgba(255, 20, 147, 0.08);
-  transform: translateX(4px);
-}
-
-.weather-section {
-  background: #f9f5ff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #f0e0ff;
-}
-
-.weather-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.weather-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #333;
-}
-
-.weather-tag {
-  background: #fff0ff;
-  color: #c71585;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-.weather-summary {
-  margin: 0 0 1rem;
-  color: #555;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.weather-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1rem;
-  color: #555;
-  font-size: 0.9rem;
-  line-height: 1.8;
-}
-
-.weather-list li {
-  display: flex;
-  justify-content: space-between;
-}
-
-.weather-btn {
-  width: 100%;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 12px;
-  background: #fff;
-  color: #c71585;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.weather-btn:hover {
-  background: #ffeeff;
-}
-
-.notice-title {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #333;
-  line-height: 1.4;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.notice-time {
-  margin: 0.5rem 0 0;
-  font-size: 0.75rem;
-  color: #888;
-}
 
 /* Footer */
 .footer {
@@ -600,30 +421,6 @@ onUnmounted(() => {
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
   }
 
-  .right-sidebar {
-    display: none;
-  }
-
-  .sidebar-toggle {
-    display: block;
-  }
-
-  .header-content {
-    gap: 0.75rem;
-  }
-
-  .search-box {
-    max-width: 200px;
-  }
-
-  .header-actions {
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-
-  .main-content {
-    padding: 1.5rem;
-  }
 }
 
 @media (max-width: 768px) {
