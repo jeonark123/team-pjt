@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { RouterLink } from 'vue-router';
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import { useMeetingStore } from '@/stores/meeting';
@@ -192,7 +193,7 @@ const focusPlace = (place: any) => {
   if (typeof place.lat === 'number' && typeof place.lng === 'number') {
     const center = new kakao.maps.LatLng(place.lat, place.lng);
     kakaoMap.value.setCenter(center);
-    kakaoMap.value.setLevel && kakaoMap.value.setLevel(5);
+    kakaoMap.value.setLevel?.(5);
     return;
   }
 
@@ -200,7 +201,7 @@ const focusPlace = (place: any) => {
   const marker = markerInstances.value.find((m) => (m as any).__placeId === place.id);
   if (marker) {
     kakaoMap.value.setCenter(marker.getPosition());
-    kakaoMap.value.setLevel && kakaoMap.value.setLevel(5);
+    kakaoMap.value.setLevel?.(5);
   }
 };
 

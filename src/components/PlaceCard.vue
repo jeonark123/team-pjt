@@ -1,30 +1,58 @@
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-const { place } = defineProps<{ place: any }>()
+/* eslint-disable @typescript-eslint/no-explicit-any */
+interface Place {
+  id: string | number;
+  name: string;
+  // optional properties to allow multiple place shapes
+  type?: string;
+  distance?: string;
+  difficulty?: string;
+  image?: string;
+  description?: string;
+  rating?: number;
+  reviews?: number;
+  lat?: number;
+  lng?: number;
+  region?: string;
+  category?: string;
+  tags?: string[];
+  address?: string;
+}
+
+const { place } = defineProps<{ place: Place }>();
 const emit = defineEmits<{
-  (e: 'select', place: any): void
-  (e: 'create', place: any): void
-}>()
+  (e: 'select', place: Place): void;
+  (e: 'create', place: Place): void;
+}>();
 
 const createMeeting = (e: Event) => {
-  e.stopPropagation()
-  emit('create', place)
-}
+  e.stopPropagation();
+  emit('create', place);
+};
 
 const isImageUrl = (v: unknown) => {
   try {
-    return /^(https?:)?\/\//.test(String(v))
-  } catch (e) {
-    return false
+    return /^(https?:)?\/\//.test(String(v));
+  } catch {
+    return false;
   }
-}
+};
 </script>
 
 <template>
   <div class="place-card" @click="emit('select', place)">
     <div class="place-image">
       <template v-if="place.image && isImageUrl(place.image)">
-        <img class="place-thumb" :src="place.image" :alt="place.name" @error="(e)=>{(e.target as HTMLImageElement).style.display='none'}" />
+        <img
+          class="place-thumb"
+          :src="place.image"
+          :alt="place.name"
+          @error="
+            (e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }
+          "
+        />
       </template>
       <template v-else>
         <span class="image-emoji">{{ place.image || '📍' }}</span>
