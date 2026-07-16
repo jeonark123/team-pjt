@@ -45,13 +45,13 @@ export async function loadPublicCatalog(perRegionLimit = 40): Promise<PublicPlac
     const datasets = await Promise.all(
       responses.map(async (response, idx) => {
         if (!response.ok) {
-          console.warn('Failed to fetch', regionFiles[idx].path, response.status);
+          console.warn('Failed to fetch', regionFiles[idx]?.path, response.status);
           return null;
         }
         try {
           return await response.json();
         } catch (e) {
-          console.warn('Invalid JSON:', regionFiles[idx].path, e);
+          console.warn('Invalid JSON:', regionFiles[idx]?.path, e);
           return null;
         }
       }),
@@ -60,7 +60,7 @@ export async function loadPublicCatalog(perRegionLimit = 40): Promise<PublicPlac
     const itemsWithLabel = datasets
       .map((dataset: any, index: number) => {
         const items = extractItems(dataset);
-        return (items || []).map((item: any) => ({ item, label: regionFiles[index].label }));
+        return (items || []).map((item: any) => ({ item, label: regionFiles[index]?.label ?? '알 수 없음' }));
       })
       .flat();
 

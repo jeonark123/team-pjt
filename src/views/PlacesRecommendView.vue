@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, no-unused-expressions */
 import { ref, computed, onMounted, watch } from 'vue';
 import PlaceCard from '@/components/PlaceCard.vue';
 import FlaticonIcon from '@/components/FlaticonIcon.vue';
@@ -23,9 +24,9 @@ const filteredPlaces = computed(() => {
       const ids = new Set(res.map((r: any) => r.item?.id ?? r.item))
       return placesData.filter((p) => ids.has(p.id) && (selectedType.value === '전체' || p.type === selectedType.value))
     }
-  } catch (e) {
-    // ignore
-  }
+    } catch {
+      // ignore
+    }
   const ql = q.toLowerCase()
   return placesData.filter((place) => {
     const typeMatch = selectedType.value === '전체' || place.type === selectedType.value;
@@ -51,7 +52,7 @@ watch(
         threshold: 0.35,
         ignoreLocation: true,
       })
-    } catch (e) {
+    } catch {
       // fuse not installed — ignore and fallback to includes
       console.warn('Fuse.js not available, falling back to simple search')
       fuseIndex.value = null
@@ -119,7 +120,9 @@ const shuffle = <T,>(arr: T[]): T[] => {
   const copy = [...arr];
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+    const tmp = copy[i]!;
+    copy[i] = copy[j]!;
+    copy[j] = tmp;
   }
   return copy;
 };
@@ -288,7 +291,7 @@ const renderMarkers = () => {
   if (markerClusterer.value && markerClusterer.value.clear) {
     try {
       markerClusterer.value.clear();
-    } catch (e) {
+    } catch {
       markerClusterer.value = null;
     }
     markerClusterer.value = null;
@@ -331,7 +334,7 @@ const renderMarkers = () => {
         averageCenter: true,
         minLevel: 7,
       });
-    } catch (e) {
+    } catch {
       createdMarkers.forEach((m) => m.setMap(kakaoMap.value));
     }
   } else {
@@ -348,7 +351,7 @@ const focusOnPlace = (place: any) => {
   if (!s) return;
   const center = new kakao.maps.LatLng(s.lat, s.lng);
   kakaoMap.value.setCenter(center);
-  kakaoMap.value.setLevel && kakaoMap.value.setLevel(5);
+  kakaoMap.value.setLevel?.(5);
 };
 
 const onCreateMeeting = async (place: any) => {
@@ -412,16 +415,27 @@ onMounted(async () => {
   aiCatalog.value = await loadPublicCatalog();
   isCatalogLoading.value = false;
   // 초기 추천: 인기(평점) 기반 상위 장소를 보여줍니다.
-  try {
-    const topByRating = placesData
-      .slice()
-      .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
-      .slice(0, 6)
-    aiResults.value = topByRating
-    renderMarkers()
-  } catch (e) {
-    console.warn('initial popularity recommendation failed', e)
-  }
+    try {
+      const topByRating = placesData
+        .slice()
+        .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
+        .slice(0, 6)
+      // map local place shape to PublicPlace shape expected by aiResults
+      aiResults.value = topByRating.map((p: any) => ({
+        id: String(p.id ?? p.contentid ?? p.title ?? Math.random().toString(36).slice(2)),
+        name: p.name ?? p.title ?? '장소',
+        region: p.region ?? '기타',
+        category: p.type ?? '기타',
+        tags: [p.type ?? ''],
+        description: p.description ?? p.intro ?? '',
+        address: p.addr1 ?? p.address ?? '',
+        lat: p.lat,
+        lng: p.lng,
+      }))
+      renderMarkers()
+    } catch (err) {
+      console.warn('initial popularity recommendation failed', err)
+    }
 });
 
 watch(

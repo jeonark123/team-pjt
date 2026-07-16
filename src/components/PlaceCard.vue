@@ -1,16 +1,22 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface Place {
-  id: number
+  id: string | number
   name: string
-  type: string
-  distance: string
-  difficulty: string
-  image: string
-  description: string
-  rating: number
-  reviews: number
+  // optional properties to allow multiple place shapes
+  type?: string
+  distance?: string
+  difficulty?: string
+  image?: string
+  description?: string
+  rating?: number
+  reviews?: number
   lat?: number
   lng?: number
+  region?: string
+  category?: string
+  tags?: string[]
+  address?: string
 }
 
 const { place } = defineProps<{ place: Place }>()
@@ -27,7 +33,7 @@ const createMeeting = (e: Event) => {
 const isImageUrl = (v: unknown) => {
   try {
     return /^(https?:)?\/\//.test(String(v))
-  } catch (e) {
+  } catch {
     return false
   }
 }

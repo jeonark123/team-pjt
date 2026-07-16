@@ -1,38 +1,49 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue';
 
 interface Tab {
-  id: string
-  label: string
-  icon: string
+  id: string;
+  label: string;
+  icon: string;
 }
 
 interface Props {
-  tabs: Tab[]
-  activeTab?: string
+  tabs: Tab[];
+  activeTab?: string;
 }
 
 interface Emits {
-  (e: 'update:activeTab', value: string): void
+  (e: 'update:activeTab', value: string): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   activeTab: undefined,
-})
+});
 
-const emit = defineEmits<Emits>()
+const emit = defineEmits<Emits>();
 
-const localActive = ref(props.activeTab || props.tabs[0]?.id || '')
+const localActive = ref(props.activeTab || props.tabs[0]?.id || '');
+
+const activeIndex = computed(() => {
+  const idx = props.tabs.findIndex((t) => t.id === localActive.value);
+  return idx === -1 ? 0 : idx;
+});
+
+const indicatorStyle = computed(() => ({
+  width: `${100 / props.tabs.length}%`,
+  transform: `translateX(${activeIndex.value * 100}%)`,
+}));
 
 const handleTabClick = (tabId: string) => {
-  localActive.value = tabId
-  emit('update:activeTab', tabId)
-}
+  localActive.value = tabId;
+  emit('update:activeTab', tabId);
+};
 </script>
 
 <template>
   <div class="tab-container">
-    <div class="tab-buttons">
+    <div class="tab-track">
+      <div class="tab-indicator" :style="indicatorStyle"></div>
       <button
         v-for="tab in tabs"
         :key="tab.id"
@@ -54,59 +65,77 @@ const handleTabClick = (tabId: string) => {
   width: 100%;
 }
 
-.tab-buttons {
+.tab-track {
+  position: relative;
   display: flex;
-  gap: 0.5rem;
-  border-bottom: 2px solid var(--border-color);
+  gap: 0.25rem;
+  background: #f3f2f5;
+  border-radius: 14px;
+  padding: 0.35rem;
   margin-bottom: 1.5rem;
-  flex-wrap: wrap;
+}
+
+.tab-indicator {
+  position: absolute;
+  top: 0.35rem;
+  left: 0.35rem;
+  bottom: 0.35rem;
+  width: calc(100% / 3 - 0.35rem);
+  background: #fff;
+  border-radius: 10px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.06);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
 }
 
 .tab-button {
+  position: relative;
+  z-index: 1;
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
   background: transparent;
   border: none;
-  color: var(--text-light);
+  color: #8b8a94;
   font-weight: 600;
   cursor: pointer;
-  position: relative;
-  transition: all 0.3s;
-  font-size: 0.95rem;
+  transition: color 0.2s ease;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .tab-button .tab-icon {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
 }
 
-.tab-button:hover {
-  color: var(--primary);
+.tab-button:hover:not(.active) {
+  color: #4a4952;
 }
 
 .tab-button.active {
-  color: var(--primary);
+  color: var(--primary, #ff1f8f);
 }
 
-.tab-button.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+.tab-button.active .tab-icon {
+  transform: scale(1.08);
 }
 
 .tab-content {
-  animation: fadeIn 0.3s;
+  animation: fadeIn 0.25s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -115,13 +144,40 @@ const handleTabClick = (tabId: string) => {
 }
 
 @media (max-width: 768px) {
+  .tab-track {
+    border-radius: 12px;
+    padding: 0.3rem;
+  }
+
+  .tab-indicator {
+    border-radius: 9px;
+  }
+
   .tab-button {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
+    padding: 0.55rem 0.6rem;
+    font-size: 0.82rem;
+    gap: 0.3rem;
+    border-radius: 9px;
   }
 
   .tab-button .tab-icon {
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-button {
+    padding: 0.5rem 0.4rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-indicator,
+  .tab-content,
+  .tab-icon {
+    transition: none !important;
+    animation: none !important;
   }
 }
 </style>

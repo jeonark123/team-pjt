@@ -1,24 +1,23 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue';
+import { RouterLink, RouterView } from 'vue-router';
+import PlaceChatBot from '@/components/PlaceChatBot.vue';
+import FlaticonIcon from '@/components/FlaticonIcon.vue';
 
-import { onMounted, onUnmounted, ref } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
-import PlaceChatBot from '@/components/PlaceChatBot.vue'
-import FlaticonIcon from '@/components/FlaticonIcon.vue'
-
-const showSidebar = ref(false)
-const isChatbotOpen = ref(false)
+const showSidebar = ref(false);
+const isChatbotOpen = ref(false);
 
 const openChatbotFromEvent = () => {
-  isChatbotOpen.value = true
-}
+  isChatbotOpen.value = true;
+};
 
 onMounted(() => {
-  window.addEventListener('open-chatbot', openChatbotFromEvent)
-})
+  window.addEventListener('open-chatbot', openChatbotFromEvent);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('open-chatbot', openChatbotFromEvent)
-})
+  window.removeEventListener('open-chatbot', openChatbotFromEvent);
+});
 </script>
 
 <template>
@@ -88,23 +87,23 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f9f9f9;
+  background: #f7f7f9;
 }
 
-/* Header Styles */
+/* ================= Header ================= */
 .header {
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #ececef;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .header-content {
   max-width: 1800px;
   margin: 0 auto;
-  padding: 0.8rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -113,18 +112,18 @@ onUnmounted(() => {
 
 .sidebar-toggle {
   display: none;
-  background: #fff5fa;
-  border: 1px solid #ffe4ef;
+  background: #f3f2f5;
+  border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #ff5ca8;
+  color: #4a4952;
   padding: 0.5rem;
   border-radius: 10px;
+  transition: all 0.2s ease;
 }
 
 .sidebar-toggle:hover {
-  background: #ffeaf3;
-  transform: translateY(-1px);
+  background: #ebeaee;
 }
 
 .logo {
@@ -137,7 +136,7 @@ onUnmounted(() => {
 }
 
 .logo-img {
-  height: 52px;
+  height: 44px;
   width: auto;
   display: block;
 }
@@ -149,7 +148,7 @@ onUnmounted(() => {
 .logo-text {
   font-size: 1.3rem;
   font-weight: bold;
-  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
+  background: linear-gradient(135deg, #ff1f8f 0%, #ff62aa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -167,18 +166,18 @@ onUnmounted(() => {
 .search-box input {
   width: 100%;
   padding: 0.65rem 2.5rem 0.65rem 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  background: #f5f5f5;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: #f3f2f5;
   font-size: 0.9rem;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
 }
 
 .search-box input:focus {
   outline: none;
-  border-color: #ff1493;
+  border-color: #ff1f8f;
   background: white;
-  box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 31, 143, 0.1);
 }
 
 .search-icon {
@@ -191,7 +190,7 @@ onUnmounted(() => {
 
 .header-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   align-items: center;
   justify-self: end;
   margin-left: auto;
@@ -201,43 +200,35 @@ onUnmounted(() => {
 .icon-btn {
   width: 38px;
   height: 38px;
-  border: 1px solid #f0e0ea;
-  background: #fff;
+  border: none;
+  background: #f3f2f5;
   border-radius: 50%;
   cursor: pointer;
   font-size: 1.1rem;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ff5ca8;
-  box-shadow: 0 2px 6px rgba(255, 20, 147, 0.08);
+  color: #4a4952;
 }
 
 .icon-btn:hover {
-  background: linear-gradient(135deg, #ff1f8f 0%, #ff6bb7 100%);
+  background: #ff1f8f;
   color: white;
-  border-color: #ff5ca8;
-  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.24);
-  transform: scale(1.05);
+  transform: translateY(-1px);
 }
 
 .profile-btn {
-  background: #fff;
-  color: #ff5ca8;
-  border: 1px solid #f0e0ea;
-  box-shadow: 0 2px 6px rgba(255, 20, 147, 0.08);
+  background: #f3f2f5;
+  color: #4a4952;
 }
 
 .profile-btn:hover {
-  background: linear-gradient(135deg, #ff1f8f 0%, #ff6bb7 100%);
+  background: #ff1f8f;
   color: white;
-  border-color: #ff5ca8;
-  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.24);
-  transform: scale(1.05);
 }
 
-/* Layout */
+/* ================= Layout ================= */
 .layout {
   display: grid;
   grid-template-columns: 200px 1fr;
@@ -249,82 +240,74 @@ onUnmounted(() => {
   padding: 1.5rem;
 }
 
-/* Sidebar */
+/* ================= Sidebar ================= */
 .sidebar {
   background: white;
   border-radius: 16px;
-  padding: 1.5rem 0;
+  padding: 1rem;
   height: fit-content;
   position: sticky;
   top: 80px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ececef;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0 0.5rem;
+  gap: 0.25rem;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0.9rem 1rem;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
   text-decoration: none;
-  color: #333;
-  border-radius: 10px;
-  transition: all 0.3s;
+  color: #6b6a74;
+  border-radius: 12px;
+  transition: all 0.2s ease;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.92rem;
 }
 
 .nav-item:hover {
-  background: rgba(255, 20, 147, 0.08);
-  color: #FF1493;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 20, 147, 0.12);
+  background: #f3f2f5;
+  color: #26232b;
 }
 
 .nav-item:hover .nav-icon {
-  background: #fff5fa;
-  color: #ff5ca8;
+  color: #ff1f8f;
 }
 
 .nav-item .nav-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: #fff5fa;
-  border-radius: 10px;
-  color: #ff5ca8;
+  width: 32px;
+  height: 32px;
+  color: #a3a2ab;
+  transition: color 0.2s ease;
 }
 
 .nav-item.router-link-active {
-  background: rgba(255, 20, 147, 0.15);
-  color: #ff1493;
-  border-left: 3px solid #ff1493;
-  padding-left: calc(1rem - 3px);
+  background: #fff0f7;
+  color: #ff1f8f;
 }
 
 .nav-item.router-link-active .nav-icon {
-  background: #ff5ca8;
-  color: white;
+  color: #ff1f8f;
 }
 
 .nav-cta {
-  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
+  background: linear-gradient(135deg, #ff1f8f 0%, #ff62aa 100%);
   color: white;
-  margin: 1rem 0.5rem 0;
-  border-radius: 10px;
+  margin-top: 0.5rem;
+  border-radius: 12px;
 }
 
 .nav-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 31, 143, 0.25);
 }
 
 .nav-icon {
@@ -333,56 +316,54 @@ onUnmounted(() => {
 }
 
 .nav-label {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
 .sidebar-footer {
-  margin-top: 2rem;
-  padding: 0 0.5rem;
-  border-top: 1px solid #eee;
+  margin-top: 1.5rem;
   padding-top: 1rem;
+  border-top: 1px solid #ececef;
 }
 
 .sidebar-info {
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 0.5rem;
 }
 
 .info-label {
   font-weight: 600;
   font-size: 0.85rem;
-  color: #333;
+  color: #26232b;
   margin: 0 0 0.25rem;
 }
 
 .info-desc {
   font-size: 0.75rem;
-  color: #888;
+  color: #a3a2ab;
   margin: 0;
   line-height: 1.4;
 }
 
-/* Main Content */
+/* ================= Main Content ================= */
 .main-content {
   flex: 1;
   background: white;
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ececef;
 }
 
-
-/* Footer */
+/* ================= Footer ================= */
 .footer {
   background: white;
   padding: 1.5rem;
   text-align: center;
-  color: #888;
-  border-top: 1px solid #e0e0e0;
-  font-size: 0.9rem;
+  color: #a3a2ab;
+  border-top: 1px solid #ececef;
+  font-size: 0.85rem;
 }
 
-/* Responsive */
+/* ================= Responsive ================= */
 @media (max-width: 1400px) {
   .layout {
     grid-template-columns: 170px 1fr 250px;
@@ -413,14 +394,21 @@ onUnmounted(() => {
     position: fixed;
     left: 0;
     top: 60px;
-    width: 200px;
+    width: 220px;
     height: calc(100vh - 60px);
     border-radius: 0;
     z-index: 99;
     overflow-y: auto;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+    border: none;
+    border-right: 1px solid #ececef;
   }
 
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 768px) {
@@ -433,6 +421,10 @@ onUnmounted(() => {
     display: none;
   }
 
+  .logo-img {
+    height: 36px;
+  }
+
   .search-box {
     display: none;
   }
@@ -443,14 +435,14 @@ onUnmounted(() => {
   }
 
   .icon-btn {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     font-size: 0.95rem;
   }
 
   .main-content {
-    padding: 1rem;
-    border-radius: 12px;
+    padding: 1.25rem;
+    border-radius: 14px;
   }
 
   .sidebar.active {
@@ -462,7 +454,7 @@ onUnmounted(() => {
 @media (max-width: 480px) {
   .header-content {
     padding: 0.5rem;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .logo-icon {
@@ -485,7 +477,7 @@ onUnmounted(() => {
   }
 
   .main-content {
-    padding: 0.75rem;
+    padding: 1rem;
   }
 }
 </style>
