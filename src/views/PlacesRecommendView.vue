@@ -5,29 +5,33 @@ import PlaceCard from '@/components/PlaceCard.vue';
 import FlaticonIcon from '@/components/FlaticonIcon.vue';
 import { placesData } from '@/data/mockData';
 import { loadPublicCatalog, type PublicPlace } from '@/utils/loadPublicCatalog';
-import { useRouter } from 'vue-router'
-import { useDraftMeetingStore } from '@/stores/draftMeeting'
+import { useRouter } from 'vue-router';
+import { useDraftMeetingStore } from '@/stores/draftMeeting';
 
 const selectedType = ref<string>('전체');
 const searchQuery = ref<string>('');
 const types = ['전체', '러닝', '산책', '관광'];
 
 const filteredPlaces = computed(() => {
-  const q = searchQuery.value && searchQuery.value.trim()
+  const q = searchQuery.value && searchQuery.value.trim();
   if (!q) {
-    return placesData.filter((place) => selectedType.value === '전체' || place.type === selectedType.value)
+    return placesData.filter(
+      (place) => selectedType.value === '전체' || place.type === selectedType.value,
+    );
   }
   // If Fuse is prepared, use it; otherwise fallback to simple includes
   try {
     if (fuseIndex.value && typeof fuseIndex.value.search === 'function') {
-      const res = fuseIndex.value.search(q)
-      const ids = new Set(res.map((r: any) => r.item?.id ?? r.item))
-      return placesData.filter((p) => ids.has(p.id) && (selectedType.value === '전체' || p.type === selectedType.value))
+      const res = fuseIndex.value.search(q);
+      const ids = new Set(res.map((r: any) => r.item?.id ?? r.item));
+      return placesData.filter(
+        (p) => ids.has(p.id) && (selectedType.value === '전체' || p.type === selectedType.value),
+      );
     }
-    } catch {
-      // ignore
-    }
-  const ql = q.toLowerCase()
+  } catch {
+    // ignore
+  }
+  const ql = q.toLowerCase();
   return placesData.filter((place) => {
     const typeMatch = selectedType.value === '전체' || place.type === selectedType.value;
     const searchMatch =
@@ -38,27 +42,27 @@ const filteredPlaces = computed(() => {
   });
 });
 
-const fuseIndex = ref<any>(null)
+const fuseIndex = ref<any>(null);
 
 watch(
   () => searchQuery.value,
   async (q) => {
-    if (!q || !q.trim()) return
-    if (fuseIndex.value) return
+    if (!q || !q.trim()) return;
+    if (fuseIndex.value) return;
     try {
-      const Fuse = (await import('fuse.js')).default
+      const Fuse = (await import('fuse.js')).default;
       fuseIndex.value = new Fuse(placesData, {
         keys: ['name', 'description', 'type'],
         threshold: 0.35,
         ignoreLocation: true,
-      })
+      });
     } catch {
       // fuse not installed — ignore and fallback to includes
-      console.warn('Fuse.js not available, falling back to simple search')
-      fuseIndex.value = null
+      console.warn('Fuse.js not available, falling back to simple search');
+      fuseIndex.value = null;
     }
   },
-)
+);
 
 const mapContainer = ref<HTMLDivElement | null>(null);
 const kakaoMap = ref<any>(null);
@@ -68,14 +72,14 @@ const showCluster = ref<boolean>(true);
 const externalPlaces = ref<any[]>([]);
 const showDatasets = ref({ travel: false, culture: false, leisure: false });
 const kakaoAvailable = ref<boolean | null>(null);
-const router = useRouter()
-const draftStore = useDraftMeetingStore()
+const router = useRouter();
+const draftStore = useDraftMeetingStore();
 
 // --- AI 추천 카탈로그 (전체 지역 공공데이터) ---
 const aiCatalog = ref<PublicPlace[]>([]);
 const isCatalogLoading = ref(true);
-const aiResults = ref<PublicPlace[]>([])
-const isAISearching = ref(false)
+const aiResults = ref<PublicPlace[]>([]);
+const isAISearching = ref(false);
 
 // --- 팁 키워드 ---
 type Tip = {
@@ -166,53 +170,54 @@ const buildSearchPrompt = (question: string) => {
 ${JSON.stringify(aiCatalog.value, null, 2)}`,
     `사용자 질의: ${question}`,
     '가장 잘 맞는 장소의 id들을 최대 6개 골라 JSON으로 추천하세요. 형식: {"recommendedIds":["id1","id2"]}',
-  ].join('\n\n')
-}
+  ].join('\n\n');
+};
 
 const runAIBasedSearch = async (q: string) => {
-  if (!q || !q.trim()) return
+  if (!q || !q.trim()) return;
   if (!aiCatalog.value.length) {
-    alert('추천에 사용할 장소 카탈로그가 로드되지 않았습니다. 잠시 후 다시 시도하세요.')
-    return
+    alert('추천에 사용할 장소 카탈로그가 로드되지 않았습니다. 잠시 후 다시 시도하세요.');
+    return;
   }
-  isAISearching.value = true
-  aiResults.value = []
+  isAISearching.value = true;
+  aiResults.value = [];
   try {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined
-    if (!apiKey) throw new Error('VITE_OPENAI_API_KEY가 설정되지 않았습니다.')
-    const { default: OpenAI } = await import('openai')
-    const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
+    if (!apiKey) throw new Error('VITE_OPENAI_API_KEY가 설정되지 않았습니다.');
+    const { default: OpenAI } = await import('openai');
+    const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
     const completion = await client.chat.completions.create({
       model: 'gpt-5-mini',
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: '한국어로 답하세요. 오직 제공된 카탈로그 내 항목만 사용하세요.' },
+        {
+          role: 'system',
+          content: '한국어로 답하세요. 오직 제공된 카탈로그 내 항목만 사용하세요.',
+        },
         { role: 'user', content: buildSearchPrompt(q) },
       ],
-    })
-    const content = completion.choices?.[0]?.message?.content ?? '{}'
-    let parsed: { recommendedIds?: unknown } | null = null
+    });
+    const content = completion.choices?.[0]?.message?.content ?? '{}';
+    let parsed: { recommendedIds?: unknown } | null = null;
     try {
-      parsed = JSON.parse(content)
+      parsed = JSON.parse(content);
     } catch {
-      parsed = null
+      parsed = null;
     }
-    const recommendedIds = Array.isArray(parsed?.recommendedIds)
-      ? parsed?.recommendedIds
-      : []
-    const catalogMap = new Map(aiCatalog.value.map((p) => [String(p.id), p]))
+    const recommendedIds = Array.isArray(parsed?.recommendedIds) ? parsed?.recommendedIds : [];
+    const catalogMap = new Map(aiCatalog.value.map((p) => [String(p.id), p]));
     const matched = (recommendedIds as any[])
       .map((id) => catalogMap.get(String(id)))
-      .filter((p): p is PublicPlace => Boolean(p))
-    aiResults.value = matched.slice(0, 8)
-    renderMarkers()
+      .filter((p): p is PublicPlace => Boolean(p));
+    aiResults.value = matched.slice(0, 8);
+    renderMarkers();
   } catch (err) {
-    console.error('AI search error', err)
-    alert((err && (err as Error).message) || 'AI 검색 중 오류가 발생했습니다.')
+    console.error('AI search error', err);
+    alert((err && (err as Error).message) || 'AI 검색 중 오류가 발생했습니다.');
   } finally {
-    isAISearching.value = false
+    isAISearching.value = false;
   }
-}
+};
 
 const runTipSearch = async (tip: Tip) => {
   if (tip.isLoading) return;
@@ -226,8 +231,8 @@ const runTipSearch = async (tip: Tip) => {
     if (!aiCatalog.value.length)
       throw new Error('아직 장소 데이터를 불러오는 중이에요. 잠시 후 다시 시도해주세요.');
 
-    const { default: OpenAI } = await import('openai')
-    const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
+    const { default: OpenAI } = await import('openai');
+    const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
 
     const completion = await client.chat.completions.create({
       model: 'gpt-5-mini',
@@ -363,14 +368,17 @@ const onCreateMeeting = async (place: any) => {
     lat: place.lat ?? place.mapy ?? place.latitude ?? null,
     lng: place.lng ?? place.mapx ?? place.longitude ?? null,
     description: place.description ?? place.intro ?? place.addr1 ?? '',
-  }
-  console.debug('[PlacesRecommend] onCreateMeeting normalized:', normalized)
-  draftStore.setDraft(normalized)
+  };
+  console.debug('[PlacesRecommend] onCreateMeeting normalized:', normalized);
+  draftStore.setDraft(normalized);
   // wait for a tick so store persists/reactivity settles, then navigate
-  await (await import('vue')).nextTick()
-  console.debug('[PlacesRecommend] draft set, navigating to create with query placeName=', String(normalized.name))
-  router.push({ name: 'create', query: { placeName: String(normalized.name) } })
-}
+  await (await import('vue')).nextTick();
+  console.debug(
+    '[PlacesRecommend] draft set, navigating to create with query placeName=',
+    String(normalized.name),
+  );
+  router.push({ name: 'create', query: { placeName: String(normalized.name) } });
+};
 
 const initializeMap = () => {
   const kakao = (window as any).kakao;
@@ -415,27 +423,27 @@ onMounted(async () => {
   aiCatalog.value = await loadPublicCatalog();
   isCatalogLoading.value = false;
   // 초기 추천: 인기(평점) 기반 상위 장소를 보여줍니다.
-    try {
-      const topByRating = placesData
-        .slice()
-        .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
-        .slice(0, 6)
-      // map local place shape to PublicPlace shape expected by aiResults
-      aiResults.value = topByRating.map((p: any) => ({
-        id: String(p.id ?? p.contentid ?? p.title ?? Math.random().toString(36).slice(2)),
-        name: p.name ?? p.title ?? '장소',
-        region: p.region ?? '기타',
-        category: p.type ?? '기타',
-        tags: [p.type ?? ''],
-        description: p.description ?? p.intro ?? '',
-        address: p.addr1 ?? p.address ?? '',
-        lat: p.lat,
-        lng: p.lng,
-      }))
-      renderMarkers()
-    } catch (err) {
-      console.warn('initial popularity recommendation failed', err)
-    }
+  try {
+    const topByRating = placesData
+      .slice()
+      .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
+      .slice(0, 6);
+    // map local place shape to PublicPlace shape expected by aiResults
+    aiResults.value = topByRating.map((p: any) => ({
+      id: String(p.id ?? p.contentid ?? p.title ?? Math.random().toString(36).slice(2)),
+      name: p.name ?? p.title ?? '장소',
+      region: p.region ?? '기타',
+      category: p.type ?? '기타',
+      tags: [p.type ?? ''],
+      description: p.description ?? p.intro ?? '',
+      address: p.addr1 ?? p.address ?? '',
+      lat: p.lat,
+      lng: p.lng,
+    }));
+    renderMarkers();
+  } catch (err) {
+    console.warn('initial popularity recommendation failed', err);
+  }
 });
 
 watch(
@@ -456,13 +464,22 @@ watch(
 
       <div class="search-filter">
         <div class="search-box">
-            <span class="search-icon"><FlaticonIcon name="search" :size="16" /></span>
-            <input v-model="searchQuery" @keyup.enter="runAIBasedSearch(searchQuery)" type="text" placeholder="장소를 검색해보세요..." />
-            <button class="search-btn" @click="runAIBasedSearch(searchQuery)" :disabled="isAISearching">
-              <span v-if="isAISearching">검색 중...</span>
-              <span v-else>추천</span>
-            </button>
-          </div>
+          <span class="search-icon"><FlaticonIcon name="search" :size="16" /></span>
+          <input
+            v-model="searchQuery"
+            @keyup.enter="runAIBasedSearch(searchQuery)"
+            type="text"
+            placeholder="장소를 검색해보세요..."
+          />
+          <button
+            class="search-btn"
+            @click="runAIBasedSearch(searchQuery)"
+            :disabled="isAISearching"
+          >
+            <span v-if="isAISearching">검색 중...</span>
+            <span v-else>추천</span>
+          </button>
+        </div>
 
         <!-- filter buttons removed per design request -->
       </div>
@@ -489,9 +506,9 @@ watch(
     </div>
 
     <section class="results-section">
-      <div v-if="(aiResults.length>0) || filteredPlaces.length > 0" class="places-grid">
+      <div v-if="aiResults.length > 0 || filteredPlaces.length > 0" class="places-grid">
         <PlaceCard
-          v-for="place in (aiResults.length>0 ? aiResults : filteredPlaces)"
+          v-for="place in aiResults.length > 0 ? aiResults : filteredPlaces"
           :key="place.id"
           :place="place"
           @select="focusOnPlace"
@@ -652,7 +669,10 @@ watch(
   cursor: pointer;
   margin-left: -1px;
 }
-.search-btn:disabled { opacity: 0.6; cursor: not-allowed }
+.search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .search-icon {
   position: absolute;

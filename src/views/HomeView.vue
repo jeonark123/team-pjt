@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-member-access, no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { RouterLink } from 'vue-router';
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import { useMeetingStore } from '@/stores/meeting';
