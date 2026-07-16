@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import OpenAI from 'openai';
+// OpenAI is imported dynamically to avoid bundling/node-runtime errors in the browser.
 import { useRecommendedPlaces } from '@/composables/useRecommendedPlaces';
 
 const { setRecommendedPlaces, isChatOpen } = useRecommendedPlaces();
@@ -315,10 +315,8 @@ const handleSubmit = async () => {
       throw new Error('VITE_OPENAI_API_KEY가 설정되지 않았습니다.');
     }
 
-    const client = new OpenAI({
-      apiKey,
-      dangerouslyAllowBrowser: true,
-    });
+    const { default: OpenAI } = await import('openai')
+    const client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
     const completion = await client.chat.completions.create({
       model: 'gpt-5-mini',

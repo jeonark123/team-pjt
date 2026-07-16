@@ -9,20 +9,39 @@ interface Place {
   description: string
   rating: number
   reviews: number
+  lat?: number
+  lng?: number
 }
 
-defineProps<{
-  place: Place
-}>()
+const { place } = defineProps<{ place: Place }>()
 const emit = defineEmits<{
   (e: 'select', place: Place): void
+  (e: 'create', place: Place): void
 }>()
+
+const createMeeting = (e: Event) => {
+  e.stopPropagation()
+  emit('create', place)
+}
+
+const isImageUrl = (v: unknown) => {
+  try {
+    return /^(https?:)?\/\//.test(String(v))
+  } catch (e) {
+    return false
+  }
+}
 </script>
 
 <template>
   <div class="place-card" @click="emit('select', place)">
     <div class="place-image">
-      <span class="image-emoji">{{ place.image }}</span>
+      <template v-if="place.image && isImageUrl(place.image)">
+        <img class="place-thumb" :src="place.image" :alt="place.name" @error="(e)=>{(e.target as HTMLImageElement).style.display='none'}" />
+      </template>
+      <template v-else>
+        <span class="image-emoji">{{ place.image || '📍' }}</span>
+      </template>
     </div>
     <div class="place-content">
       <h3>{{ place.name }}</h3>
@@ -45,7 +64,7 @@ const emit = defineEmits<{
           <span class="value">{{ place.reviews }}개</span>
         </div>
       </div>
-      <button class="btn-primary">여기서 모임 만들기</button>
+      <button class="btn-primary" @click.stop="createMeeting">여기서 모임 만들기</button>
     </div>
   </div>
 </template>
@@ -73,6 +92,13 @@ const emit = defineEmits<{
   align-items: center;
   justify-content: center;
   font-size: 3rem;
+}
+
+.place-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .place-content {
