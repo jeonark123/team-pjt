@@ -442,7 +442,7 @@ onMounted(async () => {
       address: p.addr1 ?? p.address ?? '',
       lat: p.lat,
       lng: p.lng,
-    }))
+    }));
 
     renderMarkers();
   } catch (err) {
