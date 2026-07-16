@@ -6,13 +6,17 @@ import MeetingCard from '@/components/MeetingCard.vue';
 import FlaticonIcon from '@/components/FlaticonIcon.vue';
 
 const meetingStore = useMeetingStore();
-const activeTab = ref('female');
+const activeTab = ref('all');
 const categories = [
+  { id: 'all', name: '전체 보기', icon: 'group' },
   { id: 'female', name: '여자 모임', icon: 'group' },
   { id: 'male', name: '남자 모임', icon: 'group' },
   { id: 'mixed', name: '혼성 모임', icon: 'group' },
 ];
 const filteredMeetings = computed(() => {
+  if (activeTab.value === 'all') {
+    return meetingStore.getAllMeetings();
+  }
   return meetingStore.getMeetingsByCategory(activeTab.value as 'male' | 'female' | 'mixed');
 });
 </script>
