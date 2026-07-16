@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useMeetingStore } from '@/stores/meeting';
 import FlaticonIcon from '@/components/FlaticonIcon.vue';
+import { ref, computed } from 'vue';
 
 interface Meeting {
   id: number;
@@ -24,14 +25,28 @@ const props = defineProps<{
 
 const meetingStore = useMeetingStore();
 
-import { ref } from 'vue';
-
 const toast = ref(false);
 const toastMessage = ref('');
 
+// localStorage 키 생성
+const joinKey = computed(() => `joined_meeting_${props.meeting.id}`);
+
+// 이미 참가했는지 여부
+const hasJoined = ref(localStorage.getItem(joinKey.value) === 'true');
+
 const handleJoin = () => {
+  // 이미 참가한 경우 막기
+  if (hasJoined.value) {
+    toastMessage.value = '이미 참가한 모임이에요.';
+    toast.value = true;
+    setTimeout(() => (toast.value = false), 1500);
+    return;
+  }
+
   const success = meetingStore.joinMeeting(props.meeting.id);
   if (success) {
+    localStorage.setItem(joinKey.value, 'true');
+    hasJoined.value = true;
     toastMessage.value = '모임에 참가했습니다!';
     toast.value = true;
     setTimeout(() => (toast.value = false), 1500);
@@ -120,9 +135,10 @@ const getCategoryColor = (category: string) => {
       <button
         class="btn-join"
         @click="handleJoin"
-        :disabled="meeting.participants >= meeting.maxParticipants"
+        :disabled="hasJoined || meeting.participants >= meeting.maxParticipants"
       >
-        <span v-if="meeting.participants < meeting.maxParticipants">참가하기</span>
+        <span v-if="hasJoined">참가완료</span>
+        <span v-else-if="meeting.participants < meeting.maxParticipants">참가하기</span>
         <span v-else>모임 가득 참</span>
       </button>
     </div>
@@ -130,7 +146,6 @@ const getCategoryColor = (category: string) => {
   <!-- Toast -->
   <div v-if="toast" class="mc-toast">{{ toastMessage }}</div>
 </template>
-
 <style scoped>
 .meeting-card {
   background: white;
