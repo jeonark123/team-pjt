@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import { useMeetingStore } from '@/stores/meeting'
 import MeetingCard from '@/components/MeetingCard.vue'
 import FlaticonIcon from '@/components/FlaticonIcon.vue'
@@ -14,6 +14,22 @@ const categories = [
 ]
 const filteredMeetings = computed(() => {
   return meetingStore.getMeetingsByCategory(activeTab.value as 'male' | 'female' | 'mixed')
+})
+
+// handle ?highlight=<id> to scroll and highlight a meeting card
+const route = useRoute()
+onMounted(() => {
+  const h = route.query.highlight
+  if (!h) return
+  const id = String(h)
+  setTimeout(() => {
+    const el = document.getElementById('meeting-' + id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.classList.add('highlight')
+      setTimeout(() => el.classList.remove('highlight'), 4000)
+    }
+  }, 300)
 })
 </script>
 
@@ -145,9 +161,9 @@ const filteredMeetings = computed(() => {
 }
 
 .meetings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
 }
 
 .empty-state {
@@ -306,5 +322,12 @@ const filteredMeetings = computed(() => {
   .cta-card p {
     font-size: 0.9rem;
   }
+}
+
+/* Highlight style for programmatic scroll-to */
+.meetings-list .meeting-card.highlight {
+  box-shadow: 0 12px 30px rgba(255, 20, 147, 0.18);
+  transform: translateY(-6px);
+  border-color: #ff1493;
 }
 </style>

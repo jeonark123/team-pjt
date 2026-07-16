@@ -70,6 +70,9 @@ onUnmounted(() => {
         <RouterView />
       </main>
 
+      <!-- Mobile sidebar backdrop -->
+      <div v-if="showSidebar" class="sidebar-backdrop" @click="showSidebar = false"></div>
+
       <PlaceChatBot :is-open="isChatbotOpen" @update:is-open="isChatbotOpen = $event" />
     </div>
 
@@ -102,7 +105,7 @@ onUnmounted(() => {
 }
 
 .header-content {
-  max-width: 1800px;
+  max-width: var(--container-max, 1200px);
   margin: 0 auto;
   padding: 0.8rem 1.5rem;
   display: flex;
@@ -243,7 +246,7 @@ onUnmounted(() => {
   grid-template-columns: 200px 1fr;
   gap: 1.5rem;
   flex: 1;
-  max-width: 1800px;
+  max-width: var(--container-max, 1200px);
   margin: 0 auto;
   width: 100%;
   padding: 1.5rem;
@@ -399,6 +402,65 @@ onUnmounted(() => {
   }
 }
 
+@media (max-width: 1024px) {
+  .search-box {
+    max-width: 220px;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: block;
+  }
+
+  .search-box {
+    display: none;
+  }
+
+  .header-content {
+    padding: 0.5rem 1rem;
+  }
+
+  .logo-img {
+    height: 44px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .sidebar {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 72px;
+    bottom: 0;
+    width: 260px;
+    padding: 1rem;
+    border-radius: 0 12px 12px 0;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    z-index: 200;
+    background: white;
+    transform: translateX(-8px);
+    transition: transform 240ms ease;
+  }
+
+  .sidebar.active {
+    display: block;
+    transform: translateX(0);
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}
+
 @media (max-width: 1200px) {
   .layout {
     grid-template-columns: 1fr;
@@ -456,6 +518,13 @@ onUnmounted(() => {
   .sidebar.active {
     width: 100%;
     border-radius: 0;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 180;
   }
 }
 

@@ -72,7 +72,7 @@ const getCategoryColor = (category: string) => {
 </script>
 
 <template>
-  <div class="meeting-card">
+  <div :id="'meeting-' + meeting.id" class="meeting-card">
     <div class="card-header" :style="{ borderLeftColor: getCategoryColor(meeting.category) }">
       <div class="header-info">
         <span class="gender-badge" :style="{ background: getCategoryColor(meeting.category) }">{{
@@ -295,5 +295,18 @@ const getCategoryColor = (category: string) => {
   .card-content h3 {
     font-size: 1rem;
   }
+}
+
+/* Highlight state when navigated via query */
+.meeting-card.highlight {
+  box-shadow: 0 12px 30px rgba(255, 20, 147, 0.18);
+  transform: translateY(-6px);
+  border-color: #ff1493;
+}
+
+@media (max-width: 480px) {
+  .meeting-card { padding: 0.6rem; }
+  .card-content { padding: 0.75rem; }
+  .emoji { width: 34px; height: 34px }
 }
 </style>
