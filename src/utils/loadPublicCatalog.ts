@@ -41,17 +41,22 @@ const extractItems = (dataset: any): any[] => {
 
 export async function loadPublicCatalog(perRegionLimit = 40): Promise<PublicPlace[]> {
   try {
-    const responses = await Promise.all(regionFiles.map((file) => fetch(file.path)));
     const datasets = await Promise.all(
-      responses.map(async (response, idx) => {
-        if (!response.ok) {
-          console.warn('Failed to fetch', regionFiles[idx].path, response.status);
-          return null;
-        }
+      regionFiles.map(async (file) => {
         try {
-          return await response.json();
-        } catch (e) {
-          console.warn('Invalid JSON:', regionFiles[idx].path, e);
+          const response = await fetch(file.path);
+          if (!response.ok) {
+            console.warn('Failed to fetch', file.path, response.status);
+            return null;
+          }
+          try {
+            return await response.json();
+          } catch (e) {
+            console.warn('Invalid JSON:', file.path, e);
+            return null;
+          }
+        } catch (err) {
+          console.warn('Fetch error for', file.path, err);
           return null;
         }
       }),
@@ -60,7 +65,8 @@ export async function loadPublicCatalog(perRegionLimit = 40): Promise<PublicPlac
     const itemsWithLabel = datasets
       .map((dataset: any, index: number) => {
         const items = extractItems(dataset);
-        return (items || []).map((item: any) => ({ item, label: regionFiles[index].label }));
+        const label = regionFiles[index]?.label ?? 'unknown';
+        return (items || []).map((item: any) => ({ item, label }));
       })
       .flat();
 

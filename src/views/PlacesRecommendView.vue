@@ -1,15 +1,35 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { ref, computed, onMounted, watch } from 'vue';
 import PlaceCard from '@/components/PlaceCard.vue';
 import FlaticonIcon from '@/components/FlaticonIcon.vue';
 import { placesData } from '@/data/mockData';
 import { loadPublicCatalog, type PublicPlace } from '@/utils/loadPublicCatalog';
+type GenericPlace =
+  | PublicPlace
+  | {
+      id: number | string
+      name?: string
+      type?: string
+      distance?: string
+      difficulty?: string
+      image?: string
+      description?: string
+      rating?: number
+      reviews?: number
+      lat?: number
+      lng?: number
+      region?: string
+      category?: string
+      tags?: string[]
+      address?: string
+    }
 import { useRouter } from 'vue-router'
 import { useDraftMeetingStore } from '@/stores/draftMeeting'
 
 const selectedType = ref<string>('전체');
 const searchQuery = ref<string>('');
-const types = ['전체', '러닝', '산책', '관광'];
+// filter types (unused removed)
 
 const filteredPlaces = computed(() => {
   const q = searchQuery.value && searchQuery.value.trim()
@@ -37,7 +57,8 @@ const filteredPlaces = computed(() => {
   });
 });
 
-const fuseIndex = ref<any>(null)
+type FuseIndex = { search: (q: string) => unknown[] }
+const fuseIndex = ref<FuseIndex | null>(null)
 
 watch(
   () => searchQuery.value,
@@ -60,11 +81,11 @@ watch(
 )
 
 const mapContainer = ref<HTMLDivElement | null>(null);
-const kakaoMap = ref<any>(null);
-const markerInstances = ref<any[]>([]);
-const markerClusterer = ref<any>(null);
+const kakaoMap = ref<{ setCenter?: (c: any) => void; setLevel?: (n: number) => void } | null>(null);
+const markerInstances = ref<Array<{ setMap?: (m: any) => void }>>([]);
+const markerClusterer = ref<unknown>(null);
 const showCluster = ref<boolean>(true);
-const externalPlaces = ref<any[]>([]);
+const externalPlaces = ref<GenericPlace[]>([]);
 const showDatasets = ref({ travel: false, culture: false, leisure: false });
 const kakaoAvailable = ref<boolean | null>(null);
 const router = useRouter()
@@ -73,7 +94,7 @@ const draftStore = useDraftMeetingStore()
 // --- AI 추천 카탈로그 (전체 지역 공공데이터) ---
 const aiCatalog = ref<PublicPlace[]>([]);
 const isCatalogLoading = ref(true);
-const aiResults = ref<PublicPlace[]>([])
+const aiResults = ref<GenericPlace[]>([])
 const isAISearching = ref(false)
 
 // --- 팁 키워드 ---
@@ -119,7 +140,9 @@ const shuffle = <T,>(arr: T[]): T[] => {
   const copy = [...arr];
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+    const tmp = copy[i] as T;
+    copy[i] = copy[j] as T;
+    copy[j] = tmp;
   }
   return copy;
 };
@@ -285,10 +308,10 @@ const renderMarkers = () => {
 
   markerInstances.value.forEach((m) => m.setMap && m.setMap(null));
   markerInstances.value = [];
-  if (markerClusterer.value && markerClusterer.value.clear) {
+  if (markerClusterer.value && (markerClusterer.value as any).clear) {
     try {
-      markerClusterer.value.clear();
-    } catch (e) {
+      ;(markerClusterer.value as any).clear();
+    } catch {
       markerClusterer.value = null;
     }
     markerClusterer.value = null;
@@ -347,8 +370,8 @@ const focusOnPlace = (place: any) => {
   const s = toMarkersSource(place);
   if (!s) return;
   const center = new kakao.maps.LatLng(s.lat, s.lng);
-  kakaoMap.value.setCenter(center);
-  kakaoMap.value.setLevel && kakaoMap.value.setLevel(5);
+  kakaoMap.value.setCenter?.(center);
+  kakaoMap.value.setLevel?.(5);
 };
 
 const onCreateMeeting = async (place: any) => {

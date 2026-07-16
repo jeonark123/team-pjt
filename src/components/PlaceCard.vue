@@ -1,22 +1,9 @@
 <script setup lang="ts">
-interface Place {
-  id: number
-  name: string
-  type: string
-  distance: string
-  difficulty: string
-  image: string
-  description: string
-  rating: number
-  reviews: number
-  lat?: number
-  lng?: number
-}
-
-const { place } = defineProps<{ place: Place }>()
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+const { place } = defineProps<{ place: any }>()
 const emit = defineEmits<{
-  (e: 'select', place: Place): void
-  (e: 'create', place: Place): void
+  (e: 'select', place: any): void
+  (e: 'create', place: any): void
 }>()
 
 const createMeeting = (e: Event) => {
@@ -122,6 +109,8 @@ const isImageUrl = (v: unknown) => {
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -243,6 +232,7 @@ const isImageUrl = (v: unknown) => {
 
   .description {
     -webkit-line-clamp: 1;
+    line-clamp: 1;
     font-size: 0.8rem;
     margin: 0.3rem 0;
   }

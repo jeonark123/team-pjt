@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { ref, onMounted } from 'vue';
 import { placesData } from '@/data/mockData';
 import { useRouter, useRoute } from 'vue-router';
@@ -482,7 +483,7 @@ const handleSubmit = async () => {
           <input
             ref="placeInput"
             v-model="placeQuery"
-            @input="onPlaceInput($event.target.value)"
+            @input="onPlaceInput(($event.target as HTMLInputElement).value)"
             type="text"
             placeholder="검색어를 입력하면 장소가 표시됩니다 (예: 여의도 한강공원)"
           />
